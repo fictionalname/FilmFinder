@@ -20,7 +20,7 @@ const PROVIDERS = [
 const WATCH_REGION = 'GB';
 const MIN_CHUNK_SIZE = 20;
 const MAX_CHUNK_SIZE = 100;
-const MAX_CHUNK_PAGES = 8;
+const LOG_FILE = DATA_DIR . '/tmdb.log';
 const LOG_FILE = DATA_DIR . '/tmdb.log';
 
 set_error_handler(function (int $severity, string $message, string $file, int $line) {
@@ -236,16 +236,11 @@ function handleChunk(int $providerId, int $chunkSize): array
     $totalPages = $providerMeta['totalPages'];
     $page = max(1, $providerMeta['nextPage'] ?? 1);
     $newAdded = 0;
-    $duplicateStreak = 0;
+    $processedMovies = 0;
     $currentYear = (int)date('Y');
     $stopEarly = false;
-    $processedMovies = 0;
-    $pagesFetched = 0;
 
     while (true) {
-        if ($pagesFetched >= MAX_CHUNK_PAGES) {
-            break;
-        }
         $query = [
             'with_watch_providers' => $providerId,
             'watch_region' => WATCH_REGION,
@@ -257,13 +252,13 @@ function handleChunk(int $providerId, int $chunkSize): array
         ];
         $response = tmdbRequest('/3/discover/movie', $query);
         if (!$response || empty($response['results'])) {
+            $stopEarly = true;
             break;
         }
-        $pagesFetched++;
-        $processedMovies += count($response['results']);
         if (empty($totalPages)) {
             $totalPages = $response['total_pages'] ?? null;
         }
+
         foreach ($response['results'] as $movieData) {
             $releaseDate = $movieData['release_date'] ?? '';
             if ($releaseDate) {
@@ -278,18 +273,13 @@ function handleChunk(int $providerId, int $chunkSize): array
             }
             $movieId = $movieData['id'];
             if (isset($seenIds[$movieId])) {
-                $duplicateStreak++;
-                if ($duplicateStreak >= 5) {
-                    $stopEarly = true;
-                    break;
-                }
                 continue;
             }
-            $duplicateStreak = 0;
             $cast = fetchTopCast($movieId);
             $movieRecord = buildMovieRecord($movieData, $genreMap, $providerId, $cast);
             if (upsertMovie($movies, $movieRecord, $providerId)) {
                 $newAdded++;
+                $processedMovies++;
                 $seenIds[$movieId] = true;
                 $providerMeta['seen_ids'][] = $movieId;
                 if (!empty($releaseDate)) {
@@ -298,10 +288,15 @@ function handleChunk(int $providerId, int $chunkSize): array
                     }
                 }
             }
+            if ($processedMovies >= $chunkSize) {
+                break 2;
+            }
         }
-        if ($stopEarly || $processedMovies >= $chunkSize) {
+
+        if ($stopEarly) {
             break;
         }
+
         $page++;
         if ($totalPages !== null && $page > $totalPages) {
             $stopEarly = true;
@@ -312,7 +307,7 @@ function handleChunk(int $providerId, int $chunkSize): array
     if ($stopEarly || ($totalPages !== null && $page > $totalPages)) {
         $providerMeta['completed'] = true;
     }
-    $providerMeta['nextPage'] = $page;
+    $providerMeta['nextPage'] = $page + 1;
     $providerMeta['totalPages'] = $totalPages;
     $providerMeta['lastFetched'] = $now;
     $metadata['lastCacheRefresh'] = $now;

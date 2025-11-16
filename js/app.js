@@ -9,6 +9,14 @@ const PROVIDERS = [
   { id: 337, name: 'Disney' },
   { id: 350, name: 'Apple' },
 ];
+const PROVIDER_STYLES = {
+  8: 'netflix',
+  9: 'amazon',
+  337: 'disney',
+  350: 'apple',
+};
+
+let filtersResizeTimer;
 
 const state = {
   movies: [],
@@ -27,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
   populateYearSelectors();
   renderProviderControls();
   attachUIListeners();
+  updateFiltersSpacing();
   initializeApp();
 });
 
@@ -176,6 +185,7 @@ function renderSummaryCard(overallStats = {}) {
     badge.textContent = `${provider.name}: ${count}`;
     badgeContainer.appendChild(badge);
   });
+  updateFiltersSpacing();
 }
 
 function renderProviderControls() {
@@ -183,7 +193,8 @@ function renderProviderControls() {
   container.innerHTML = '';
   PROVIDERS.forEach((provider) => {
     const label = document.createElement('label');
-    label.className = 'provider-chip';
+    const styleKey = PROVIDER_STYLES[provider.id] ?? 'default';
+    label.className = `provider-chip provider-chip--${styleKey}`;
     label.innerHTML = `
       <input type="checkbox" data-provider="${provider.id}" checked />
       <span>${provider.name}</span>
@@ -418,3 +429,17 @@ function showToast(message) {
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+function updateFiltersSpacing() {
+  const overlay = document.querySelector('.filters-overlay');
+  if (!overlay) {
+    return;
+  }
+  const height = overlay.offsetHeight;
+  document.documentElement.style.setProperty('--filters-overlay-height', `${height}px`);
+}
+
+window.addEventListener('resize', () => {
+  clearTimeout(filtersResizeTimer);
+  filtersResizeTimer = setTimeout(updateFiltersSpacing, 150);
+});
