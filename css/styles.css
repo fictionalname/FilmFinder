@@ -34,8 +34,8 @@ body {
 
 .filters-toggle {
   position: fixed;
-  top: 0.65rem;
-  right: 0.85rem;
+  bottom: 1rem;
+  right: 1rem;
   z-index: 20;
   border: none;
   border-radius: 999px;
@@ -220,6 +220,26 @@ body {
 .summary-card p {
   margin: 0;
   color: var(--muted);
+}
+
+.view-films-btn {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-radius: 0.85rem;
+  padding: 0.55rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: #0b1220;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.view-films-btn:focus-visible,
+.view-films-btn:active {
+  outline: none;
+  background: rgba(255, 183, 3, 0.9);
 }
 
 .view-films-btn {

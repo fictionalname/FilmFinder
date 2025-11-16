@@ -221,9 +221,12 @@ function handleChunk(int $providerId, int $chunkSize): array
     $newAdded = 0;
     $currentYear = (int)date('Y');
     $stopEarly = false;
-    $processedInChunk = 0;
+    $pagesFetched = 0;
 
     while (true) {
+        if ($pagesFetched >= $chunkSize) {
+            break;
+        }
         $query = [
             'with_watch_providers' => $providerId,
             'watch_region' => WATCH_REGION,
@@ -235,10 +238,11 @@ function handleChunk(int $providerId, int $chunkSize): array
         ];
         $response = tmdbRequest('/3/discover/movie', $query);
         if (!$response || empty($response['results'])) {
-            logMessage('tmdb', 'empty discover response', ['providerId' => $providerId, 'page' => $currentPage]);
             $stopEarly = true;
+            logMessage('tmdb', 'empty discover response', ['providerId' => $providerId, 'page' => $currentPage]);
             break;
         }
+        $pagesFetched++;
         if (empty($totalPages)) {
             $totalPages = $response['total_pages'] ?? null;
         }
@@ -263,16 +267,11 @@ function handleChunk(int $providerId, int $chunkSize): array
             $movieRecord = buildMovieRecord($movieData, $genreMap, $providerId, $cast);
             if (upsertMovie($movies, $movieRecord, $providerId)) {
                 $newAdded++;
-                $processedInChunk++;
                 $seenIds[$movieId] = true;
                 $providerMeta['seen_ids'][] = $movieId;
                 if (!empty($releaseDate) && (empty($providerMeta['latestReleaseDate']) || $releaseDate > $providerMeta['latestReleaseDate'])) {
                     $providerMeta['latestReleaseDate'] = $releaseDate;
                 }
-            }
-            if ($processedInChunk >= $chunkSize) {
-                $currentPage++;
-                break 2;
             }
         }
 
