@@ -1,10 +1,10 @@
 # Streaming Film Explorer
 
-This is a mobile-first streaming film discovery experience that caches TMDB data via a PHP backend. The frontend requests only cached data and renders a responsive filter panel, film grid, and live download overlay with chunked updates for Netflix, Prime Video, Disney+, and Apple TV+.
+This is a mobile-first streaming film discovery experience that caches TMDB data via a PHP backend. The frontend requests only cached data and renders a responsive filter panel, film grid, and live download overlay with chunked updates for Netflix, Amazon, Disney, and Apple while targeting the UK region.
 
 ## Features
 
-- Provider-specific chunked downloads with cast details fetched during each chunk.
+- Provider-specific chunked downloads (up to 1000 results per chunk) with cast details fetched during each chunk.
 - Cache invalidation after 24 hours and only the missing films are appended to the cache.
 - Film cards include title, release year, summary, TMDB rating, vote count, cast, genres, available services, and quick links.
 - Filters for services (OR logic), year range, genre tick boxes (OR logic), and text search plus sorting.
@@ -51,3 +51,4 @@ This is a mobile-first streaming film discovery experience that caches TMDB data
 
 - Keep the PHP `data/` directory writable so the cache and metadata can be updated.
 - No API keys are ever exposed in the browser; all TMDB communication happens server-side.
+

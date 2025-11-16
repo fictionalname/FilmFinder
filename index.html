@@ -9,37 +9,18 @@
   </head>
   <body>
     <div class="app-shell">
-      <header class="hero">
-        <p class="eyebrow">Streaming Film Explorer</p>
-        <h1>Track every major release from 2020 onwards.</h1>
-        <p class="lede">
-          Discover what’s available across Netflix, Prime Video, Disney+, and Apple TV+, search casts,
-          and filter by genre and year while we keep everything cached for a smooth mobile-first
-          experience.
-        </p>
-      </header>
-
-      <section class="summary-card" aria-live="polite">
-        <div>
-          <p class="summary-label">Current filters</p>
-          <h2 id="summary-state">Preparing films…</h2>
-          <p id="summary-detail"></p>
-        </div>
-        <div class="summary-providers" id="summary-providers"></div>
-      </section>
-
-      <section class="filters-panel">
+      <section class="filters-panel" aria-label="Filters">
         <div class="filters-group">
           <div class="filters-header">
             <h3>Services</h3>
-            <p>Tap to see films from each provider; selecting more than one shows films available on either service.</p>
+            <p>Check any to show films from that provider.</p>
           </div>
           <div class="provider-controls" id="provider-controls"></div>
         </div>
 
         <div class="filters-group">
           <div class="filters-header">
-            <h3>Year range</h3>
+            <h3>Year</h3>
           </div>
           <div class="year-range">
             <label>
@@ -75,10 +56,19 @@
         <div class="filters-group">
           <div class="filters-header">
             <h3>Genres</h3>
-            <p>Genres use OR logic—pick a few, we show films that contain any of them.</p>
+            <p>OR logic—pick any.</p>
           </div>
           <div class="genre-grid" id="genre-grid"></div>
         </div>
+      </section>
+
+      <section class="summary-card" aria-live="polite">
+        <div>
+          <p class="summary-label">Cache snapshot</p>
+          <h2 id="summary-state">Preparing films…</h2>
+          <p id="summary-detail"></p>
+        </div>
+        <div class="summary-providers" id="summary-providers"></div>
       </section>
 
       <section class="films-section">

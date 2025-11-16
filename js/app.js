@@ -1,11 +1,13 @@
-const API_ENDPOINT = 'api/tmdb.php';
+﻿const API_ENDPOINT = 'api/tmdb.php';
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w185';
 const CURRENT_YEAR = new Date().getFullYear();
+const CHUNK_FETCH_SIZE = 1000;
+const CHUNK_DELAY_MS = 250;
 const PROVIDERS = [
   { id: 8, name: 'Netflix' },
-  { id: 9, name: 'Prime Video' },
-  { id: 337, name: 'Disney+' },
-  { id: 350, name: 'Apple TV+' },
+  { id: 9, name: 'Amazon' },
+  { id: 337, name: 'Disney' },
+  { id: 350, name: 'Apple' },
 ];
 
 const state = {
@@ -36,8 +38,8 @@ async function initializeApp() {
     updateProviderStatus(status.providers || []);
     updateOverlay(status);
     await runProviderUpdates(status.providers || []);
-    const filmsPayload = await fetchFilms();
-    state.movies = filmsPayload.movies || [];
+    const filmsResponse = await fetchFilms();
+    state.movies = filmsResponse.movies || [];
     state.totalCached = state.movies.length;
     renderGenreGrid();
     applyFilters();
@@ -63,9 +65,9 @@ async function downloadProviderChunks(providerId) {
   while (true) {
     let chunk;
     try {
-      chunk = await fetchChunk(providerId);
+      chunk = await fetchChunk(providerId, CHUNK_FETCH_SIZE);
     } catch (error) {
-      console.error('Chunk request failed', error);
+      console.error('Chunk download failed', error);
       break;
     }
     if (!chunk || !chunk.provider) {
@@ -77,7 +79,7 @@ async function downloadProviderChunks(providerId) {
       showToast(`${chunk.toast.providerName}: ${chunk.toast.added} new films cached`);
     }
     if (!chunk.provider.completed) {
-      await delay(300);
+      await delay(CHUNK_DELAY_MS);
       continue;
     }
     break;
@@ -94,9 +96,9 @@ async function fetchFilms() {
   return res.json();
 }
 
-async function fetchChunk(providerId) {
+async function fetchChunk(providerId, chunkSize = CHUNK_FETCH_SIZE) {
   const res = await fetch(
-    `${API_ENDPOINT}?action=chunk&provider=${providerId}&chunkSize=1&ts=${Date.now()}`
+    `${API_ENDPOINT}?action=chunk&provider=${providerId}&chunkSize=${chunkSize}&ts=${Date.now()}`
   );
   return res.json();
 }
@@ -137,7 +139,7 @@ function renderOverlayProviderStatus() {
     container.innerHTML += `
       <div class="provider-status-item">
         <span>${provider.name}</span>
-        <span>${statusText}${countText ? ' · ' + countText : ''}</span>
+        <span>${statusText}${countText ? ' - ' + countText : ''}</span>
       </div>
     `;
   });
@@ -322,9 +324,7 @@ function sortMovies(list) {
       break;
     case 'newest':
     default:
-      list.sort((a, b) => {
-        return (new Date(b.release_date || 0) - new Date(a.release_date || 0));
-      });
+      list.sort((a, b) => new Date(b.release_date || 0) - new Date(a.release_date || 0));
       break;
   }
 }

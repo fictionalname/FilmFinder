@@ -13,10 +13,14 @@ const TMDB_READ_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIzOGMzMWI5ZTNmZGNlZTM5MT
 const TMDB_BASE = 'https://api.themoviedb.org';
 const PROVIDERS = [
     8 => 'Netflix',
-    9 => 'Prime Video',
-    337 => 'Disney+',
-    350 => 'Apple TV+',
+    9 => 'Amazon',
+    337 => 'Disney',
+    350 => 'Apple',
 ];
+const WATCH_REGION = 'GB';
+const MIN_CHUNK_SIZE = 20;
+const MAX_CHUNK_SIZE = 1000;
+const MAX_CHUNK_PAGES = 60;
 
 if (!is_dir(DATA_DIR)) {
     mkdir(DATA_DIR, 0755, true);
@@ -25,7 +29,13 @@ if (!is_dir(DATA_DIR)) {
 $action = $_GET['action'] ?? 'status';
 
 switch ($action) {
-    case 'chunk':
+    $providerId = isset($_GET['provider']) ? (int)$_GET['provider'] : null;
+    if (!$providerId || !isset(PROVIDERS[$providerId])) {
+        respond(['error' => 'Invalid provider id'], 400);
+    }
+    $chunkSize = isset($_GET['chunkSize']) ? (int)$_GET['chunkSize'] : 1000;
+    respond(handleChunk($providerId, $chunkSize));
+    break;
         $providerId = isset($_GET['provider']) ? (int)$_GET['provider'] : null;
         if (!$providerId || !isset(PROVIDERS[$providerId])) {
             respond(['error' => 'Invalid provider id'], 400);
@@ -191,6 +201,7 @@ function handleChunk(int $providerId, int $chunkSize): array
     $metadata = getMetadata();
     $providerMeta = &$metadata['providers'][$providerId];
 
+    $chunkSize = max(MIN_CHUNK_SIZE, min(MAX_CHUNK_SIZE, $chunkSize));
     $now = time();
     $ttlExpired = ($now - ($providerMeta['lastFetched'] ?? 0)) > CACHE_TTL;
     $needsUpdate = !$providerMeta['completed'] || $ttlExpired;
@@ -214,11 +225,16 @@ function handleChunk(int $providerId, int $chunkSize): array
     $duplicateStreak = 0;
     $currentYear = (int)date('Y');
     $stopEarly = false;
+    $processedMovies = 0;
+    $pagesFetched = 0;
 
-    for ($chunk = 0; $chunk < $chunkSize; $chunk++) {
+    while (true) {
+        if ($pagesFetched >= MAX_CHUNK_PAGES) {
+            break;
+        }
         $query = [
             'with_watch_providers' => $providerId,
-            'watch_region' => 'US',
+            'watch_region' => WATCH_REGION,
             'sort_by' => 'primary_release_date.desc',
             'page' => $page,
             'primary_release_date.gte' => '2020-01-01',
@@ -229,6 +245,8 @@ function handleChunk(int $providerId, int $chunkSize): array
         if (!$response || empty($response['results'])) {
             break;
         }
+        $pagesFetched++;
+        $processedMovies += count($response['results']);
         if (empty($totalPages)) {
             $totalPages = $response['total_pages'] ?? null;
         }
@@ -267,7 +285,7 @@ function handleChunk(int $providerId, int $chunkSize): array
                 }
             }
         }
-        if ($stopEarly) {
+        if ($stopEarly || $processedMovies >= $chunkSize) {
             break;
         }
         $page++;
