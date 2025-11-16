@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Streaming Film Explorer</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="hero">
+        <p class="eyebrow">Streaming Film Explorer</p>
+        <h1>Track every major release from 2020 onwards.</h1>
+        <p class="lede">
+          Discover what’s available across Netflix, Prime Video, Disney+, and Apple TV+, search casts,
+          and filter by genre and year while we keep everything cached for a smooth mobile-first
+          experience.
+        </p>
+      </header>
+
+      <section class="summary-card" aria-live="polite">
+        <div>
+          <p class="summary-label">Current filters</p>
+          <h2 id="summary-state">Preparing films…</h2>
+          <p id="summary-detail"></p>
+        </div>
+        <div class="summary-providers" id="summary-providers"></div>
+      </section>
+
+      <section class="filters-panel">
+        <div class="filters-group">
+          <div class="filters-header">
+            <h3>Services</h3>
+            <p>Tap to see films from each provider; selecting more than one shows films available on either service.</p>
+          </div>
+          <div class="provider-controls" id="provider-controls"></div>
+        </div>
+
+        <div class="filters-group">
+          <div class="filters-header">
+            <h3>Year range</h3>
+          </div>
+          <div class="year-range">
+            <label>
+              From
+              <select id="year-from"></select>
+            </label>
+            <label>
+              To
+              <select id="year-to"></select>
+            </label>
+          </div>
+        </div>
+
+        <div class="filters-group">
+          <div class="filters-header">
+            <h3>Search & sort</h3>
+          </div>
+          <div class="row">
+            <input
+              id="text-search"
+              type="search"
+              placeholder="Search title, summary, cast..."
+              autocomplete="off"
+            />
+            <select id="sort-order">
+              <option value="newest">Newest releases</option>
+              <option value="rating">Highest rating</option>
+              <option value="votes">Most votes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="filters-group">
+          <div class="filters-header">
+            <h3>Genres</h3>
+            <p>Genres use OR logic—pick a few, we show films that contain any of them.</p>
+          </div>
+          <div class="genre-grid" id="genre-grid"></div>
+        </div>
+      </section>
+
+      <section class="films-section">
+        <div class="films-grid" id="film-grid"></div>
+      </section>
+    </div>
+
+    <div id="loading-overlay" class="loading-overlay">
+      <div class="overlay-card">
+        <h2>Fetching films…</h2>
+        <p class="overlay-count">
+          <span id="overlay-film-count">0 films cached</span>
+        </p>
+        <div class="progress-bar">
+          <span id="overlay-progress"></span>
+        </div>
+        <div class="provider-status" id="overlay-provider-status"></div>
+      </div>
+    </div>
+
+    <div id="toast-area" class="toast-area" aria-live="assertive"></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
