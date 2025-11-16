@@ -88,19 +88,34 @@ async function downloadProviderChunks(providerId) {
 
 async function fetchStatus() {
   const res = await fetch(`${API_ENDPOINT}?action=status`);
-  return res.json();
+  return parseJsonSafely(res);
 }
 
 async function fetchFilms() {
   const res = await fetch(`${API_ENDPOINT}?action=films`);
-  return res.json();
+  return parseJsonSafely(res);
 }
 
 async function fetchChunk(providerId, chunkSize = CHUNK_FETCH_SIZE) {
   const res = await fetch(
     `${API_ENDPOINT}?action=chunk&provider=${providerId}&chunkSize=${chunkSize}&ts=${Date.now()}`
   );
-  return res.json();
+  return parseJsonSafely(res);
+}
+
+async function parseJsonSafely(res) {
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(text || `Request failed (${res.status})`);
+  }
+  if (!text) {
+    throw new Error('Empty response from server');
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error('Invalid JSON received from server');
+  }
 }
 
 function updateProviderStatus(snapshots) {

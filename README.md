@@ -26,7 +26,7 @@ This is a mobile-first streaming film discovery experience that caches TMDB data
 
 - Hosted assets live in the root with styles under `css/styles.css` and logic in `js/app.js`.
 - Loading overlay shows provider progress, film counts, and a progress bar. It stays visible until the cache is synchronized.
-- Filters panel includes service chips, year dropdowns, search input, sort select, and a neatly aligned genre grid.
+- Filters overlay sticks to the top of the experience on mobile, keeping service chips, year dropdowns, search input, sort select, and a neatly aligned genre grid packed tight above the scrolling film grid.
 - Summary card reports how many films are cached and provides per-provider counts.
 - Film grid displays poster thumbnails (~80px wide), cast (top 5 names), genres, services, and quick links to TMDB and YouTube trailers.
 - Toast area surfaces provider-specific cache additions in realtime.
