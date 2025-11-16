@@ -1,7 +1,7 @@
 ﻿const API_ENDPOINT = 'api/tmdb.php';
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w185';
 const CURRENT_YEAR = new Date().getFullYear();
-const CHUNK_FETCH_SIZE = 1000;
+const CHUNK_FETCH_SIZE = 100;
 const CHUNK_DELAY_MS = 250;
 const PROVIDERS = [
   { id: 8, name: 'Netflix' },

@@ -4,7 +4,7 @@ This is a mobile-first streaming film discovery experience that caches TMDB data
 
 ## Features
 
-- Provider-specific chunked downloads (up to 1000 results per chunk) with cast details fetched during each chunk.
+- Provider-specific chunked downloads (up to 100 films per chunk) with cast details fetched during each chunk.
 - Cache invalidation after 24 hours and only the missing films are appended to the cache.
 - Film cards include title, release year, summary, TMDB rating, vote count, cast, genres, available services, and quick links.
 - Filters for services (OR logic), year range, genre tick boxes (OR logic), and text search plus sorting.

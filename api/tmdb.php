@@ -19,8 +19,8 @@ const PROVIDERS = [
 ];
 const WATCH_REGION = 'GB';
 const MIN_CHUNK_SIZE = 20;
-const MAX_CHUNK_SIZE = 1000;
-const MAX_CHUNK_PAGES = 60;
+const MAX_CHUNK_SIZE = 100;
+const MAX_CHUNK_PAGES = 8;
 
 if (!is_dir(DATA_DIR)) {
     mkdir(DATA_DIR, 0755, true);
@@ -33,7 +33,7 @@ switch ($action) {
     if (!$providerId || !isset(PROVIDERS[$providerId])) {
         respond(['error' => 'Invalid provider id'], 400);
     }
-    $chunkSize = isset($_GET['chunkSize']) ? (int)$_GET['chunkSize'] : 1000;
+        $chunkSize = isset($_GET['chunkSize']) ? (int)$_GET['chunkSize'] : 100;
     respond(handleChunk($providerId, $chunkSize));
     break;
         $providerId = isset($_GET['provider']) ? (int)$_GET['provider'] : null;
