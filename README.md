@@ -31,6 +31,10 @@ This is a mobile-first streaming film discovery experience that caches TMDB data
 - Film grid displays poster thumbnails (~80px wide), cast (top 5 names), genres, services, and quick links to TMDB and YouTube trailers.
 - Toast area surfaces provider-specific cache additions in realtime.
 
+## Troubleshooting
+
+- If a chunk fails with HTTP 500, inspect `data/tmdb.log` for curl status, TMDB response codes, and backend exceptions; every problematic request is written there with timestamps.
+
 ## Running locally
 
 1. Serve the directory with PHP’s built-in server (or any web server that routes `api/tmdb.php` requests):

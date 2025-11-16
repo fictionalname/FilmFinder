@@ -21,6 +21,21 @@ const WATCH_REGION = 'GB';
 const MIN_CHUNK_SIZE = 20;
 const MAX_CHUNK_SIZE = 100;
 const MAX_CHUNK_PAGES = 8;
+const LOG_FILE = DATA_DIR . '/tmdb.log';
+
+set_error_handler(function (int $severity, string $message, string $file, int $line) {
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+    throw new \ErrorException($message, 0, $severity, $file, $line);
+});
+
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error) {
+        logMessage('shutdown', $error['message'], $error);
+    }
+});
 
 if (!is_dir(DATA_DIR)) {
     mkdir(DATA_DIR, 0755, true);
@@ -28,28 +43,27 @@ if (!is_dir(DATA_DIR)) {
 
 $action = $_GET['action'] ?? 'status';
 
-switch ($action) {
-    $providerId = isset($_GET['provider']) ? (int)$_GET['provider'] : null;
-    if (!$providerId || !isset(PROVIDERS[$providerId])) {
-        respond(['error' => 'Invalid provider id'], 400);
+try {
+    switch ($action) {
+        case 'chunk':
+            $providerId = isset($_GET['provider']) ? (int)$_GET['provider'] : null;
+            if (!$providerId || !isset(PROVIDERS[$providerId])) {
+                respond(['error' => 'Invalid provider id'], 400);
+            }
+            $chunkSize = isset($_GET['chunkSize']) ? (int)$_GET['chunkSize'] : 100;
+            respond(handleChunk($providerId, $chunkSize));
+            break;
+        case 'films':
+            respond(getAggregatedResponse());
+            break;
+        case 'status':
+        default:
+            respond(getStatusResponse());
+            break;
     }
-        $chunkSize = isset($_GET['chunkSize']) ? (int)$_GET['chunkSize'] : 100;
-    respond(handleChunk($providerId, $chunkSize));
-    break;
-        $providerId = isset($_GET['provider']) ? (int)$_GET['provider'] : null;
-        if (!$providerId || !isset(PROVIDERS[$providerId])) {
-            respond(['error' => 'Invalid provider id'], 400);
-        }
-        $chunkSize = max(1, min(5, (int)($_GET['chunkSize'] ?? 1)));
-        respond(handleChunk($providerId, $chunkSize));
-        break;
-    case 'films':
-        respond(getAggregatedResponse());
-        break;
-    case 'status':
-    default:
-        respond(getStatusResponse());
-        break;
+} catch (\Throwable $e) {
+    logMessage('exception', $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+    respond(['error' => $e->getMessage()], 500);
 }
 
 function respond(array $payload, int $status = 200): void
@@ -336,12 +350,19 @@ function tmdbRequest(string $endpoint, array $query = []): ?array
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     $response = curl_exec($ch);
     $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
     curl_close($ch);
-    if ($response === false || $status >= 400) {
+    if ($response === false) {
+        logMessage('curl', 'TMDB request failed', ['url' => $url, 'error' => $curlError]);
+        return null;
+    }
+    if ($status >= 400) {
+        logMessage('tmdb', 'TMDB responded with error status', ['url' => $url, 'status' => $status, 'body' => $response]);
         return null;
     }
     $data = json_decode($response, true);
     if (!is_array($data)) {
+        logMessage('tmdb', 'TMDB returned invalid JSON', ['url' => $url, 'body' => $response]);
         return null;
     }
     return $data;
@@ -408,4 +429,15 @@ function upsertMovie(array &$movies, array $newMovie, int $providerId): bool
     }
     $movies[] = $newMovie;
     return true;
+}
+
+function logMessage(string $level, string $message, array $context = []): void
+{
+    $entry = [
+        'timestamp' => date('c'),
+        'level' => $level,
+        'message' => $message,
+        'context' => $context,
+    ];
+    file_put_contents(LOG_FILE, json_encode($entry, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL, FILE_APPEND | LOCK_EX);
 }
