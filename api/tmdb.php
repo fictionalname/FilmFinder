@@ -20,8 +20,14 @@ const PROVIDERS = [
 const WATCH_REGION = 'GB';
 const MIN_CHUNK_SIZE = 20;
 const MAX_CHUNK_SIZE = 100;
-const LOG_FILE = DATA_DIR . '/tmdb.log';
-const LOG_FILE = DATA_DIR . '/tmdb.log';
+
+if (!is_dir(DATA_DIR)) {
+    mkdir(DATA_DIR, 0755, true);
+}
+
+if (!defined('LOG_FILE')) {
+    define('LOG_FILE', DATA_DIR . '/tmdb.log');
+}
 
 set_error_handler(function (int $severity, string $message, string $file, int $line) {
     if (!(error_reporting() & $severity)) {
@@ -36,10 +42,6 @@ register_shutdown_function(function () {
         logMessage('shutdown', $error['message'], $error);
     }
 });
-
-if (!is_dir(DATA_DIR)) {
-    mkdir(DATA_DIR, 0755, true);
-}
 
 $action = $_GET['action'] ?? 'status';
 
@@ -61,9 +63,9 @@ try {
             respond(getStatusResponse());
             break;
     }
-} catch (\Throwable $e) {
-    logMessage('exception', $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-    respond(['error' => $e->getMessage()], 500);
+} catch (\Throwable $exception) {
+    logMessage('exception', $exception->getMessage(), ['trace' => $exception->getTraceAsString()]);
+    respond(['error' => 'Server error', 'detail' => $exception->getMessage()], 500);
 }
 
 function respond(array $payload, int $status = 200): void
@@ -82,7 +84,6 @@ function getMetadata(): array
     if (!is_array($raw)) {
         return initializeMetadata();
     }
-    // ensure all providers exist
     foreach (PROVIDERS as $id => $name) {
         if (!isset($raw['providers'][$id])) {
             $raw['providers'][$id] = createProviderMeta($id);
@@ -96,16 +97,6 @@ function saveMetadata(array $data): void
     file_put_contents(METADATA_FILE, json_encode($data, JSON_PRETTY_PRINT));
 }
 
-function initializeMetadata(): array
-{
-    $meta = ['providers' => [], 'lastCacheRefresh' => 0];
-    foreach (PROVIDERS as $id => $name) {
-        $meta['providers'][$id] = createProviderMeta($id);
-    }
-    saveMetadata($meta);
-    return $meta;
-}
-
 function createProviderMeta(int $id): array
 {
     return [
@@ -117,7 +108,6 @@ function createProviderMeta(int $id): array
         'completed' => false,
         'latestReleaseDate' => null,
         'seen_ids' => [],
-        'needsRefresh' => true,
     ];
 }
 
@@ -142,7 +132,7 @@ function getGenreMap(): array
 {
     if (file_exists(GENRE_FILE)) {
         $content = json_decode(file_get_contents(GENRE_FILE), true);
-        if (isset($content['timestamp']) && (time() - $content['timestamp'] < CACHE_TTL) && isset($content['map'])) {
+        if (isset($content['timestamp'], $content['map']) && (time() - $content['timestamp']) < CACHE_TTL) {
             return $content['map'];
         }
     }
@@ -163,19 +153,16 @@ function getStatusResponse(): array
     $metadata = getMetadata();
     $agg = getAggregated();
     $movies = $agg['movies'] ?? [];
-    $overallTotal = count($movies);
     $providerSnapshot = [];
     foreach ($metadata['providers'] as $providerId => $meta) {
-        $providerSnapshot[$providerId] = buildProviderSnapshot($meta, $movies);
+        $providerSnapshot[] = buildProviderSnapshot($meta, $movies);
     }
     return [
         'overall' => [
-            'totalCached' => $overallTotal,
-            'uniqueMovies' => $overallTotal,
+            'totalCached' => count($movies),
             'lastUpdated' => $agg['lastUpdated'] ?? 0,
         ],
-        'providers' => array_values($providerSnapshot),
-        'cacheFreshness' => $metadata['lastCacheRefresh'] ?? 0,
+        'providers' => $providerSnapshot,
     ];
 }
 
@@ -183,20 +170,17 @@ function buildProviderSnapshot(array $meta, array $movies): array
 {
     $count = 0;
     foreach ($movies as $movie) {
-        if (isset($movie['provider_ids']) && in_array($meta['id'], $movie['provider_ids'], true)) {
+        if (in_array($meta['id'], $movie['provider_ids'] ?? [], true)) {
             $count++;
         }
     }
-    $needsRefresh = !$meta['completed'] || (time() - $meta['lastFetched'] > CACHE_TTL);
+    $needsRefresh = !$meta['completed'] || (time() - ($meta['lastFetched'] ?? 0)) > CACHE_TTL;
     return [
         'id' => $meta['id'],
         'name' => $meta['name'],
         'cached' => $count,
         'completed' => (bool)$meta['completed'],
-        'totalPages' => $meta['totalPages'],
         'nextPage' => $meta['nextPage'],
-        'lastFetched' => $meta['lastFetched'],
-        'latestReleaseDate' => $meta['latestReleaseDate'],
         'needsRefresh' => $needsRefresh,
     ];
 }
@@ -217,8 +201,7 @@ function handleChunk(int $providerId, int $chunkSize): array
 
     $chunkSize = max(MIN_CHUNK_SIZE, min(MAX_CHUNK_SIZE, $chunkSize));
     $now = time();
-    $ttlExpired = ($now - ($providerMeta['lastFetched'] ?? 0)) > CACHE_TTL;
-    $needsUpdate = !$providerMeta['completed'] || $ttlExpired;
+    $needsUpdate = !$providerMeta['completed'] || ($now - ($providerMeta['lastFetched'] ?? 0)) > CACHE_TTL;
     if (!$needsUpdate) {
         return [
             'provider' => buildProviderSnapshot($providerMeta, getAggregated()['movies']),
@@ -234,24 +217,25 @@ function handleChunk(int $providerId, int $chunkSize): array
     $movies = $aggregate['movies'];
     $seenIds = array_flip($providerMeta['seen_ids'] ?? []);
     $totalPages = $providerMeta['totalPages'];
-    $page = max(1, $providerMeta['nextPage'] ?? 1);
+    $currentPage = max(1, $providerMeta['nextPage'] ?? 1);
     $newAdded = 0;
-    $processedMovies = 0;
     $currentYear = (int)date('Y');
     $stopEarly = false;
+    $processedInChunk = 0;
 
     while (true) {
         $query = [
             'with_watch_providers' => $providerId,
             'watch_region' => WATCH_REGION,
             'sort_by' => 'primary_release_date.desc',
-            'page' => $page,
+            'page' => $currentPage,
             'primary_release_date.gte' => '2020-01-01',
             'primary_release_date.lte' => $currentYear . '-12-31',
             'api_key' => TMDB_API_KEY,
         ];
         $response = tmdbRequest('/3/discover/movie', $query);
         if (!$response || empty($response['results'])) {
+            logMessage('tmdb', 'empty discover response', ['providerId' => $providerId, 'page' => $currentPage]);
             $stopEarly = true;
             break;
         }
@@ -265,7 +249,7 @@ function handleChunk(int $providerId, int $chunkSize): array
                 $year = (int)substr($releaseDate, 0, 4);
                 if ($year < 2020) {
                     $stopEarly = true;
-                    break;
+                    break 2;
                 }
                 if ($year > $currentYear) {
                     continue;
@@ -279,35 +263,30 @@ function handleChunk(int $providerId, int $chunkSize): array
             $movieRecord = buildMovieRecord($movieData, $genreMap, $providerId, $cast);
             if (upsertMovie($movies, $movieRecord, $providerId)) {
                 $newAdded++;
-                $processedMovies++;
+                $processedInChunk++;
                 $seenIds[$movieId] = true;
                 $providerMeta['seen_ids'][] = $movieId;
-                if (!empty($releaseDate)) {
-                    if (empty($providerMeta['latestReleaseDate']) || $releaseDate > $providerMeta['latestReleaseDate']) {
-                        $providerMeta['latestReleaseDate'] = $releaseDate;
-                    }
+                if (!empty($releaseDate) && (empty($providerMeta['latestReleaseDate']) || $releaseDate > $providerMeta['latestReleaseDate'])) {
+                    $providerMeta['latestReleaseDate'] = $releaseDate;
                 }
             }
-            if ($processedMovies >= $chunkSize) {
+            if ($processedInChunk >= $chunkSize) {
+                $currentPage++;
                 break 2;
             }
         }
 
-        if ($stopEarly) {
-            break;
-        }
-
-        $page++;
-        if ($totalPages !== null && $page > $totalPages) {
+        $currentPage++;
+        if ($totalPages !== null && $currentPage > $totalPages) {
             $stopEarly = true;
             break;
         }
     }
 
-    if ($stopEarly || ($totalPages !== null && $page > $totalPages)) {
+    $providerMeta['nextPage'] = $currentPage;
+    if ($stopEarly || ($totalPages !== null && $currentPage > $totalPages)) {
         $providerMeta['completed'] = true;
     }
-    $providerMeta['nextPage'] = $page + 1;
     $providerMeta['totalPages'] = $totalPages;
     $providerMeta['lastFetched'] = $now;
     $metadata['lastCacheRefresh'] = $now;
@@ -372,9 +351,11 @@ function fetchTopCast(int $movieId): array
     $cast = array_slice($response['cast'], 0, 5);
     $names = [];
     foreach ($cast as $person) {
-        $names[] = $person['name'] ?? '';
+        if (!empty($person['name'])) {
+            $names[] = $person['name'];
+        }
     }
-    return array_filter($names);
+    return $names;
 }
 
 function buildMovieRecord(array $movieData, array $genreMap, int $providerId, array $cast): array

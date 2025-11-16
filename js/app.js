@@ -170,21 +170,15 @@ function renderOverlayProviderStatus() {
 }
 
 function renderSummaryCard(overallStats = {}) {
-  const total =
-    state.movies.length || overallStats.cachedMovies || overallStats.totalCached || state.totalCached || 0;
-  const detail = `Showing ${state.filteredMovies.length || 0} of ${total} cached films`;
-  document.getElementById('summary-state').textContent = `${total} films cached`;
-  document.getElementById('summary-detail').textContent = detail;
-  const badgeContainer = document.getElementById('summary-providers');
-  badgeContainer.innerHTML = '';
-  PROVIDERS.forEach((provider) => {
+  const summaryParts = PROVIDERS.map((provider) => {
     const meta = state.providerStatus[provider.id];
-    const count = meta?.cached ?? 0;
-    const badge = document.createElement('span');
-    badge.className = 'provider-badge';
-    badge.textContent = `${provider.name}: ${count}`;
-    badgeContainer.appendChild(badge);
+    const total = meta?.cached ?? 0;
+    const showing = state.filteredMovies.filter((movie) =>
+      (movie.provider_ids || []).includes(provider.id)
+    ).length;
+    return `${provider.name}: ${showing}/${total}`;
   });
+  document.getElementById('summary-state').textContent = summaryParts.join(' · ') || 'Preparing films...';
   updateFiltersSpacing();
 }
 

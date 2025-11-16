@@ -195,28 +195,11 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
-.summary-card h2 {
-  margin: 0;
-  font-size: 1rem;
-}
-
 .summary-card p {
   margin: 0;
   color: var(--muted);
 }
 
-.summary-providers {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-}
-
-.provider-badge {
-  padding: 0.25rem 0.6rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 999px;
-  font-size: 0.72rem;
-}
 
 .content-area {
   padding: calc(var(--filters-overlay-height, 280px) + 0.5rem) 0.9rem 2.5rem;
