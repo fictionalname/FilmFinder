@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,7 +9,8 @@
   </head>
   <body>
     <div class="app-shell">
-      <div class="filters-overlay">
+      <button class="filters-toggle" id="filters-toggle" aria-expanded="false">Filters</button>
+      <div class="filters-overlay hidden" id="filters-overlay">
         <section class="filters-panel" aria-label="Filters">
           <div class="filters-group">
             <div class="filters-header">
@@ -54,10 +55,9 @@
             </div>
           </div>
 
-            <p>OR logic�pick a few.</p>
+          <div class="filters-group">
             <div class="filters-header">
               <h3>Genres</h3>
-              <p>OR logic—pick a few.</p>
             </div>
             <div class="genre-grid" id="genre-grid"></div>
           </div>
@@ -66,6 +66,7 @@
         <section class="summary-card" aria-live="polite">
           <p id="summary-state">Preparing films...</p>
         </section>
+        <button class="view-films-btn" id="view-films-btn" type="button">View films</button>
       </div>
 
       <main class="content-area">
@@ -77,7 +78,7 @@
 
     <div id="loading-overlay" class="loading-overlay">
       <div class="overlay-card">
-          <h2>Fetching films...</h2>
+        <h2>Fetching films...</h2>
         <p class="overlay-count">
           <span id="overlay-film-count">0 films cached</span>
         </p>

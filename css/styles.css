@@ -32,13 +32,28 @@ body {
   gap: 0;
 }
 
+.filters-toggle {
+  position: fixed;
+  top: 0.65rem;
+  right: 0.85rem;
+  z-index: 20;
+  border: none;
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  background: rgba(31, 142, 249, 0.95);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+}
+
 .filters-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 15;
-  display: flex;
+  z-index: 18;
   flex-direction: column;
   gap: 0.45rem;
   padding: 0.6rem 0.85rem 0.15rem;
@@ -47,6 +62,13 @@ body {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 
+.filters-overlay.hidden {
+  display: none;
+}
+
+.filters-overlay.visible {
+  display: flex;
+}
 .filters-panel {
   background: rgba(11, 18, 32, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -200,6 +222,18 @@ body {
   color: var(--muted);
 }
 
+.view-films-btn {
+  margin: 0 auto;
+  border: none;
+  border-radius: 999px;
+  padding: 0.35rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+}
+
 
 .content-area {
   padding: calc(var(--filters-overlay-height, 280px) + 0.5rem) 0.9rem 2.5rem;
@@ -292,6 +326,34 @@ body {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   padding: 0.2rem 0.55rem;
+}
+
+.film-providers span.provider-pill {
+  border: 1px solid transparent;
+}
+
+.film-providers span.provider-pill.provider-pill--netflix {
+  background: rgba(229, 9, 20, 0.18);
+  border-color: rgba(229, 9, 20, 0.6);
+  color: #fff;
+}
+
+.film-providers span.provider-pill.provider-pill--amazon {
+  background: rgba(255, 152, 0, 0.2);
+  border-color: rgba(255, 152, 0, 0.65);
+  color: #fff;
+}
+
+.film-providers span.provider-pill.provider-pill--disney {
+  background: rgba(50, 133, 214, 0.2);
+  border-color: rgba(50, 133, 214, 0.6);
+  color: #fff;
+}
+
+.film-providers span.provider-pill.provider-pill--apple {
+  background: rgba(179, 179, 179, 0.28);
+  border-color: rgba(179, 179, 179, 0.7);
+  color: #fff;
 }
 
 .film-links {

@@ -36,6 +36,11 @@ document.addEventListener('DOMContentLoaded', () => {
   renderProviderControls();
   attachUIListeners();
   updateFiltersSpacing();
+  const filtersToggle = document.getElementById('filters-toggle');
+  const viewFilmsBtn = document.getElementById('view-films-btn');
+  filtersToggle.addEventListener('click', () => showFilters());
+  viewFilmsBtn.addEventListener('click', () => hideFilters());
+  filtersToggle.setAttribute('aria-expanded', 'false');
   initializeApp();
 });
 
@@ -365,7 +370,10 @@ function renderFilmGrid() {
         .map((genre) => `<span>${genre.name}</span>`)
         .join('');
       const providerTags = (movie.providers || [])
-        .map((provider) => `<span>${provider.name}</span>`)
+        .map((provider) => {
+          const styleKey = PROVIDER_STYLES[provider.id] ?? 'default';
+          return `<span class="provider-pill provider-pill--${styleKey}">${provider.name}</span>`;
+        })
         .join('');
       const trailerQuery = encodeURIComponent(`${movie.title} trailer`);
       const yearLabel = movie.year ? `<span class="film-year">${movie.year}</span>` : '';
@@ -424,12 +432,41 @@ function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function updateFiltersSpacing() {
-  const overlay = document.querySelector('.filters-overlay');
-  if (!overlay) {
+function showFilters() {
+  const overlay = document.getElementById('filters-overlay');
+  const toggle = document.getElementById('filters-toggle');
+  if (!overlay || !toggle) {
     return;
   }
-  const height = overlay.offsetHeight;
+  overlay.classList.remove('hidden');
+  overlay.classList.add('visible');
+  toggle.setAttribute('aria-expanded', 'true');
+  toggle.style.display = 'none';
+  updateFiltersSpacing();
+}
+
+function hideFilters() {
+  const overlay = document.getElementById('filters-overlay');
+  const toggle = document.getElementById('filters-toggle');
+  if (!overlay || !toggle) {
+    return;
+  }
+  overlay.classList.remove('visible');
+  overlay.classList.add('hidden');
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.style.display = 'block';
+  updateFiltersSpacing();
+}
+
+function updateFiltersSpacing() {
+  const overlay = document.getElementById('filters-overlay');
+  const toggle = document.getElementById('filters-toggle');
+  if (!overlay || !toggle) {
+    return;
+  }
+  const height = overlay.classList.contains('visible')
+    ? overlay.offsetHeight
+    : toggle.offsetHeight + 12;
   document.documentElement.style.setProperty('--filters-overlay-height', `${height}px`);
 }
 
@@ -437,3 +474,4 @@ window.addEventListener('resize', () => {
   clearTimeout(filtersResizeTimer);
   filtersResizeTimer = setTimeout(updateFiltersSpacing, 150);
 });
+
