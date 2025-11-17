@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Uploads the Film Finder project folder to an FTP host (Jolt.co.uk compatible) using PowerShell.
 
@@ -11,7 +11,7 @@
 
 .PARAMETER EnvFile
     Path to a `.env.deploy` file with DEPLOY_* keys (falls back to environment variables when missing).
->
+#>
 [CmdletBinding()]
 param(
     [string]$EnvFile = ".env.deploy"
@@ -175,3 +175,4 @@ foreach ($file in $files) {
 }
 
 Write-Host "Uploaded $count files."
+
