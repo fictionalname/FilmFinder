@@ -1,50 +1,40 @@
-﻿<#
+<# 
 .SYNOPSIS
-    Uploads the Film Finder project folder to an FTP host (Jolt.co.uk compatible) using PowerShell.
+    Uploads the Film Finder project to an FTP server with explicit TLS, showing verbose output for every directory and file.
 
 .DESCRIPTION
-    Uses System.Net.FtpWebRequest with explicit TLS, passive mode, and verbose logging so you can see every directory creation and file transfer.
-    Reads credentials from environment variables or `.env.deploy` (per the PHP helper) so you can keep secrets out of source control.
+    - Reads DEPLOY_* values from .env.deploy or environment variables.
+    - Uses System.Net.FtpWebRequest with AUTH TLS + upload.
+    - Prints each directory creation and file upload so you can track progress.
 
-.EXAMPLE
+.USAGE
     powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1
-
-.PARAMETER EnvFile
-    Path to a `.env.deploy` file with DEPLOY_* keys (falls back to environment variables when missing).
 #>
 [CmdletBinding()]
 param(
     [string]$EnvFile = ".env.deploy"
 )
 
-function Load-DeployEnv {
+function Load-EnvFile {
     param([string]$Path)
     $pairs = @{}
-    if (-not (Test-Path $Path)) {
-        return $pairs
-    }
-
+    if (-not (Test-Path $Path)) { return $pairs }
     Get-Content $Path | ForEach-Object {
         $line = $_.Trim()
-        if ([string]::IsNullOrWhiteSpace($line) -or $line.StartsWith("#")) {
-            return
-        }
-        if ($line -notmatch "=") {
-            return
-        }
+        if ($line -match '^\s*$' -or $line.StartsWith("#")) { return }
+        if ($line -notmatch "=") { return }
         $split = $line -split "=", 2
         $key = $split[0].Trim()
         $value = $split[1].Trim().Trim("'`"")
         $pairs[$key] = $value
     }
-
     return $pairs
 }
 
-function Get-Setting {
+function Get-DeploySetting {
     param($Key, $Default = "")
     $envValue = [System.Environment]::GetEnvironmentVariable($Key)
-    if (-not [string]::IsNullOrEmpty($envValue)) {
+    if (-not [string]::IsNullOrWhiteSpace($envValue)) {
         return $envValue
     }
     if ($DeployEnv.ContainsKey($Key)) {
@@ -53,42 +43,35 @@ function Get-Setting {
     return $Default
 }
 
-function New-FtpRequest {
+function New-AuthTlsRequest {
     param($Uri, $Method)
     $request = [System.Net.FtpWebRequest]::Create($Uri)
-    $request.Method = $Method
     $request.Credentials = $Credentials
-    $request.UseBinary = $true
-    $request.UsePassive = $UsePassive
+    $request.Method = $Method
     $request.EnableSsl = $true
+    $request.UsePassive = $UsePassive
     $request.KeepAlive = $false
+    $request.ReadWriteTimeout = 120000
     $request.Timeout = 120000
     return $request
 }
 
-function Ensure-RemoteDirectory {
+function Ensure-RemotePath {
     param($Path)
-    if ([string]::IsNullOrWhiteSpace($Path)) {
-        return
-    }
-    $trimmed = $Path.Trim("/")
-    if ($trimmed -eq "") {
-        return
-    }
-
-    $segments = $trimmed -split "/"
-    $accum = ""
+    if ([string]::IsNullOrWhiteSpace($Path)) { return }
+    $segments = $Path.Trim("/").Split("/")
+    $current = ""
     foreach ($segment in $segments) {
-        $accum = if ($accum) { "$accum/$segment" } else { $segment }
-        $dirUri = "$BaseUri/$accum"
-        Write-Verbose "Ensuring remote folder: $accum"
+        if ([string]::IsNullOrWhiteSpace($segment)) { continue }
+        $current = if ($current) { "$current/$segment" } else { $segment }
+        $uri = "$BaseUri/$current"
+        Write-Verbose "Ensuring directory $uri"
         try {
-            $req = New-FtpRequest -Uri $dirUri -Method [System.Net.WebRequestMethods+Ftp]::MakeDirectory
+            $req = New-AuthTlsRequest -Uri $uri -Method ([System.Net.WebRequestMethods+Ftp]::MakeDirectory)
             $req.GetResponse() | Out-Null
         } catch {
-            $message = $_.Exception.Response.StatusDescription
-            if ($message -notmatch "file exists") {
-                Write-Verbose " - skip (probably already exists): $message"
+            if (-not $_.Exception.Message.Contains("exists")) {
+                Write-Verbose " - create skipped: $($_.Exception.Message)"
             }
         }
     }
@@ -99,80 +82,58 @@ function Upload-File {
     $uri = "$BaseUri/$RemotePath"
     Write-Host "Uploading $LocalPath -> $uri"
     try {
-        $null = $WebClient.UploadFile($uri, "STOR", $LocalPath)
+        $bytes = [System.IO.File]::ReadAllBytes($LocalPath)
+        $request = New-AuthTlsRequest -Uri $uri -Method ([System.Net.WebRequestMethods+Ftp]::UploadFile)
+        $request.ContentLength = $bytes.Length
+        $stream = $request.GetRequestStream()
+        $stream.Write($bytes, 0, $bytes.Length)
+        $stream.Close()
+        $request.GetResponse() | Out-Null
     } catch {
-        $message = "Failed to upload {0}: {1}" -f $LocalPath, $_.Exception.Message
-        Write-Warning $message
+        Write-Warning "Failed to upload $LocalPath: $($_.Exception.Message)"
     }
 }
 
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
 [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { return $true }
 
-$DeployEnv = Load-DeployEnv -Path $EnvFile
-$FtpHost = Get-Setting -Key "DEPLOY_HOST"
-$FtpUser = Get-Setting -Key "DEPLOY_USER"
-$FtpPass = Get-Setting -Key "DEPLOY_PASS"
-$PathValue = Get-Setting -Key "DEPLOY_PATH" -Default "/public_html/filmfinder"
-$Port = [int](Get-Setting -Key "DEPLOY_PORT" -Default "21")
-$UsePassive = [bool]::Parse((Get-Setting -Key "DEPLOY_PASSIVE" -Default "true"))
+$DeployEnv = Load-EnvFile -Path $EnvFile
+$FtpHost = Get-DeploySetting -Key "DEPLOY_HOST"
+$FtpUser = Get-DeploySetting -Key "DEPLOY_USER"
+$FtpPass = Get-DeploySetting -Key "DEPLOY_PASS"
+$RemoteRoot = Get-DeploySetting -Key "DEPLOY_PATH" -Default "/public_html/filmfinder"
+$Port = [int](Get-DeploySetting -Key "DEPLOY_PORT" -Default "21")
+$UsePassive = [bool]::Parse((Get-DeploySetting -Key "DEPLOY_PASSIVE" -Default "true"))
 
 if (-not $FtpHost -or -not $FtpUser -or -not $FtpPass) {
-    Write-Error "Missing DEPLOY_HOST/USER/PASS. Update $EnvFile or set environment variables."
+    Write-Error "Missing DEPLOY_HOST/USER/PASS. Update $EnvFile or set env vars."
     exit 1
 }
 
-$RemoteRootPath = ($PathValue.Trim()).Trim("/")
-if ($RemoteRootPath -eq "." -or $RemoteRootPath -eq "") {
-    $RemoteRootPath = ""
-}
-$BaseUri = "ftp://$FtpHost`:$Port"
-
+$RemoteRoot = $RemoteRoot.Trim("/").Trim()
+$BaseUri = if ($RemoteRoot) { "ftp://$FtpHost`:$Port/$RemoteRoot" } else { "ftp://$FtpHost`:$Port" }
 $Credentials = New-Object System.Net.NetworkCredential($FtpUser, $FtpPass)
-$WebClient = New-Object System.Net.WebClient
-$WebClient.Credentials = $Credentials
-$WebClient.BaseAddress = $BaseUri + "/"
 
-Write-Host "Deploying to $BaseUri (TLS, passive=$UsePassive) -> root '$RemoteRootPath'"
+Write-Host "Deploying to $BaseUri (TLS, passive=$UsePassive)"
 
-$root = (Get-Location).ProviderPath
-$ignoreGit = "\\.git\\"
-$ignoreCache = "\\storage\\cache\\"
-
+$rootPath = (Get-Location).ProviderPath
 $files = Get-ChildItem -Recurse -File -Force | Where-Object {
-    $local = $_.FullName
-    if ($local -like "*$ignoreGit*") { return $false }
-    if ($local -like "*$ignoreCache*") { return $false }
-    if ($_.Name -match '^(\\.env|deploy\\.ps1|deploy\\.php)$') { return $false }
+    $full = $_.FullName
+    if ($full -like "*\.git\*") { return $false }
+    if ($full -like "*\storage\cache\*") { return $false }
+    if ($_.Name -match '^\.env' -or $_.Name -match '^deploy\.ps1$' -or $_.Name -match '^deploy\.php$') { return $false }
     return $true
 }
 
-$total = $files.Count
-Write-Host "Uploading $total files..."
+Write-Host "Uploading $($files.Count) files..."
 
-[int]$count = 0
 foreach ($file in $files) {
-    $relative = $file.FullName.Substring($root.Length).TrimStart('\')
-    $remoteRelative = ($relative -replace '\\','/')
-    $remoteDir = [System.IO.Path]::GetDirectoryName($remoteRelative) -replace '\\','/'
-    $remoteDir = $remoteDir -replace '^(\./)+',''
-    if ($remoteDir -and $RemoteRootPath) {
-        $fullDir = "$RemoteRootPath/$remoteDir"
-    } elseif ($remoteDir) {
-        $fullDir = $remoteDir
-    } elseif ($RemoteRootPath) {
-        $fullDir = $RemoteRootPath
-    } else {
-        $fullDir = ""
+    $relative = $file.FullName.Substring($rootPath.Length).TrimStart('\') -replace '\\','/'
+    $remoteDir = [System.IO.Path]::GetDirectoryName($relative) -replace '\\','/'
+    if ($remoteDir) {
+        Ensure-RemotePath -Path $remoteDir
     }
-
-    Ensure-RemoteDirectory -Path $fullDir
-    $perFileName = [System.IO.Path]::GetFileName($remoteRelative)
-    $remoteFilePath = if ($fullDir) { "$fullDir/$perFileName" } else { $perFileName }
-    Upload-File -LocalPath $file.FullName -RemotePath ($remoteFilePath.TrimStart("/"))
-    $count++
+    Upload-File -LocalPath $file.FullName -RemotePath $relative
 }
 
-Write-Host "Uploaded $count files."
-$WebClient.Dispose()
-
+Write-Host "Deployment finished."
