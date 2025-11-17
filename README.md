@@ -36,7 +36,8 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
    - Connects over FTPS (or plain FTP if `DEPLOY_SSL=false`);
    - Recursively uploads all project files except git/artifact directories;
    - Creates destination folders automatically and reports each uploaded file with a dot indicator.
-4. Clear the remote `storage/cache` folder if you need fresh TMDB data (cached files are time-bound but can be deleted safely).
+4. For an alternative with verbose logging, run `powershell -ExecutionPolicy Bypass -File scripts/deploy.ps1`; it reads the same `.env.deploy` keys, creates every directory, and echoes each file transfer so you can watch the process.
+5. Clear the remote `storage/cache` folder if you need fresh TMDB data (cached files are time-bound but can be deleted safely).
 
 ## Testing Roadmap
 1. Manual regression: confirm remote filtering, infinite scroll, highlights, trailer/TMDB links, URL sharing, and forced refresh across Chrome, Edge, Firefox, Safari, and iOS/Android mobile browsers.

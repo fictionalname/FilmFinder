@@ -33,4 +33,5 @@
 - Built frontend shell (`index.php`, `assets/css/app.css`) with mobile overlay filters, forced refresh script, and glass aesthetic tokens.
 - Implemented full client logic (`assets/js/app.js`): metadata loading, filter mirroring, URL sync, debounced API calls, IntersectionObserver infinite scroll, highlight cards, provider summary counts, desktop-only recently viewed chips, and graceful empty/loading states.
 - Added FTPS-ready deployment helper (`scripts/deploy.php` + `.env.deploy.example`) and published instructions in README.
+- Added verbose PowerShell deployment helper (`scripts/deploy.ps1`) that mirrors the `.env.deploy` settings and reports every directory/file transfer.
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
