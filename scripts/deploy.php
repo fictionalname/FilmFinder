@@ -175,10 +175,18 @@ final class FtpUploader
 
     private function shouldIgnore(string $relativePath): bool
     {
+        $normalized = str_replace('\\', '/', $relativePath);
         foreach ($this->ignore as $pattern) {
-            $pattern = str_replace(['*', '/'], ['.*', '\/'], $pattern);
-            if (preg_match("/^{$pattern}$/i", $relativePath)) {
+            $patternNormalized = str_replace('\\', '/', $pattern);
+            if (fnmatch($patternNormalized, $normalized)) {
                 return true;
+            }
+
+            if (strncmp($normalized, rtrim($patternNormalized, '/'), strlen(rtrim($patternNormalized, '/'))) === 0) {
+                $suffix = substr($normalized, strlen(rtrim($patternNormalized, '/')));
+                if ($suffix === '' || $suffix[0] === '/') {
+                    return true;
+                }
             }
         }
 
