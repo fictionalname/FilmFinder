@@ -97,6 +97,21 @@ function saveMetadata(array $data): void
     file_put_contents(METADATA_FILE, json_encode($data, JSON_PRETTY_PRINT));
 }
 
+function initializeMetadata(): array
+{
+    $meta = ['providers' => [], 'lastCacheRefresh' => 0];
+    foreach (PROVIDERS as $id => $name) {
+        $meta['providers'][$id] = createProviderMeta($id);
+    }
+    saveMetadata($meta);
+    return $meta;
+}
+
+function saveMetadata(array $data): void
+{
+    file_put_contents(METADATA_FILE, json_encode($data, JSON_PRETTY_PRINT));
+}
+
 function createProviderMeta(int $id): array
 {
     return [
