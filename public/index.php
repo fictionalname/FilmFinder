@@ -213,9 +213,9 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             <!-- Movie cards go here -->
         </section>
 
-        <div class="load-state" data-role="loading-indicator">
+        <div class="load-state" data-role="loading-indicator" hidden>
             <span class="pulse"></span>
-            Fetching cinematic gems…
+            <span data-role="loading-message">Fetching cinematic gems…</span>
         </div>
         <div class="empty-state" data-role="empty-state" hidden>
             <h3>No films matched those filters</h3>

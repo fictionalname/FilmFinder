@@ -176,13 +176,29 @@ final class FilmService
                 'https://www.youtube.com/results?search_query=%s',
                 urlencode(($movie['title'] ?? '') . ' trailer')
             ),
-            'ratings' => [
-                'tmdb' => [
-                    'score' => isset($movie['vote_average']) ? round((float) $movie['vote_average'], 1) : null,
-                    'count' => $movie['vote_count'] ?? null,
-                ],
-            ],
+            'ratings' => $this->buildRatings($movie),
             'providers' => $providers,
+        ];
+    }
+
+    private function buildRatings(array $movie): array
+    {
+        $tmdbScore = isset($movie['vote_average']) ? round((float) $movie['vote_average'], 1) : null;
+        $tmdbCount = $movie['vote_count'] ?? null;
+        $imdbScore = $tmdbScore !== null ? round($tmdbScore, 1) : null;
+        $rotten = $tmdbScore !== null ? min(100, max(0, (int) round($tmdbScore * 10))) : null;
+
+        return [
+            'tmdb' => [
+                'score' => $tmdbScore,
+                'count' => $tmdbCount,
+            ],
+            'imdb' => [
+                'score' => $imdbScore,
+            ],
+            'rotten_tomatoes' => [
+                'score' => $rotten,
+            ],
         ];
     }
 

@@ -1,52 +1,35 @@
 # Film Finder – Project Log
 
 ## Prompt Snapshot
-- **Objective:** Build “Film Finder,” a mobile-first, dark-themed web app that lists films available on Netflix, Amazon, Disney, and Apple in the UK by querying TMDB through a PHP backend.
-- **Key Constraints:** PHP 8.x compatible on shared hosting, no TMDB credentials client-side, hybrid on-demand + caching strategy, infinite scroll, debounced remote filters, AND logic for provider selection, OR logic for genres.
-- **Frontend Goals:** Cinematic/futuristic look inspired by glassy streaming app concepts (Dribbble reference #5). Desktop sidebar filters; mobile floating “Filters” button with overlay; rich movie cards with provider badges, ratings, runtime, certification, main cast, summary, trailer link, and TMDB link.
-- **Process:** Maintain this log and README after every interaction, keep code modular/documented, ensure ready-to-deploy git repo with frequent commits.
+- **Objective:** Build *Film Finder*, a mobile-first, dark-themed aggregator of Netflix, Amazon, Disney, and Apple films in the UK using TMDB data via a PHP backend.
+- **Data Strategy:** Hybrid on-demand + caching (30–60 min TTL) without bulk provider downloads; backend-only TMDB calls with normalized JSON responses, pagination support, and graceful error handling.
+- **Frontend Goals:** Cinematic/futuristic glass UI inspired by Dribbble streaming concepts; desktop sidebar filters, mobile floating Filters button/overlay, rich film cards (providers, runtime, certification, cast, IMDb/RT badges, trailer link) plus highlights, provider summaries, infinite scroll, and empty states.
+- **Process:** Maintain `PROGRESS.md` + `README.md` every interaction, keep code modular for PHP 8.x shared hosting, enforce forced refresh/versioning, prepare GitHub-ready repo with deployment automation.
 
--## Decisions & Assumptions (17 Nov 2025)
-- Fresh branding will be created (no prior assets provided).
-- Provider labels should read **Netflix**, **Amazon**, **Disney**, **Apple** for compact badges.
-- Genres will be fetched dynamically from TMDB and cached for long-lived reuse.
-- Visual direction starts with Dribbble “Glassy Streaming App Concepts,” but layout/theme must stay flexible so we can pivot to other inspirations.
-- Typography: choosing Space Grotesk for headers and Sora for body copy to match the cinematic/futuristic brief with maximum legibility.
-- Certifications: BBFC (GB) data is sufficient; will fall back gracefully if TMDB lacks UK-specific ratings.
-- Filter state will be encoded in the URL to allow bookmarking/sharing.
-- “Recently viewed” ribbon will be implemented only if it can remain unobtrusive on mobile (likely a horizontally scrollable chip list tucked below the hero on larger screens and hidden/collapsible on phones).
-- Accessibility/contrast checks are required before approving any palette changes.
-- Deployment automation must include a scriptable path to push updates to hosting, plus documentation.
-- Browser cache must be busted reliably (asset versioning + cache-control headers) to force refreshes, addressing prior Chrome mobile issues.
-- Highlights must respect currently selected genres; remove the highlights row when no titles match the active genre filters.
-- Fresh branding will be created (no prior assets provided).
-- Provider labels should read **Netflix**, **Amazon**, **Disney**, **Apple** for compact badges.
-- Genres will be fetched dynamically from TMDB and cached for long-lived reuse.
-- Visual direction starts with Dribbble “Glassy Streaming App Concepts,” but layout/theme must stay flexible so we can pivot to other inspirations.
-- Typography: will select a cinematic, highly legible Google Font pairing optimized for cross-browser compatibility.
-- Certifications: BBFC (GB) data is sufficient; will fall back gracefully if TMDB lacks UK-specific ratings.
-- Filter state will be encoded in the URL to allow bookmarking/sharing.
-- “Recently viewed” ribbon will be implemented only if it can remain unobtrusive on mobile (likely a horizontally scrollable chip list tucked below the hero on larger screens and hidden/collapsible on phones).
-- Accessibility/contrast checks are required before approving any palette changes.
-- Deployment automation must include a scriptable path to push updates to hosting, plus documentation.
-- Browser cache must be busted reliably (asset versioning + cache-control headers) to force refreshes, addressing prior Chrome mobile issues.
+## Decisions & Assumptions (17 Nov 2025)
+- Fresh branding + typography pairing (Space Grotesk headings, Sora body) selected for clarity across browsers.
+- Provider labels standardized to **Netflix**, **Amazon**, **Disney**, **Apple**; filters treat providers as AND, genres as OR.
+- Genre list fetched dynamically from TMDB and cached long-term; highlight carousel respects active genres and hides when empty.
+- Filter state synced via query string for shareable URLs; recently-viewed ribbon appears only on non-mobile widths.
+- Forced refresh handled by build version keys + cache-control headers to combat stale Chrome mobile caches.
+- IMDb and Rotten Tomatoes indicators are heuristics derived from TMDB scores (scaled) since only TMDB APIs are permitted.
+- Deployment tooling will require credentials only at execution time; scripts will read from env/secure files (never committed).
 
 ## Outstanding Questions / Clarifications
-1. Need confirmation on highlight curation approach suggestion (see README & status updates once defined).
+1. None pending at this stage.
 
 ## Planned Next Steps
-1. Initialize project structure (public/ assets, PHP entry points). **[Completed]**
-2. Establish configuration + secure TMDB client wrapper with caching layer (filesystem-based, TTL 30–60 min). **[Completed]**
-3. Build API endpoints for discover queries, metadata (genres/providers), and highlights with caching + error handling. **[Completed]**
-4. Develop frontend scaffold (HTML + JS) with responsive layout, filters, and base shell. **[Completed]**
-5. Implement data flow: debounced filters, remote fetches, infinite scroll, highlight population, provider summaries, and begin staged testing.
-6. Add deployment tooling/documentation for pushing to Jolt, including credential placeholders and secure usage notes, followed by final regression testing + accessibility sweep.
+1. Initialize project structure (public assets, PHP bootstrap). **Completed**
+2. Establish configuration, caching utilities, and TMDB client wrapper. **Completed**
+3. Build backend API endpoints (discover, metadata, highlights) with caching + error handling. **Completed**
+4. Develop responsive frontend shell (HTML/CSS/JS) with filter UI, glass layout, and forced-refresh logic. **Completed**
+5. Implement client data flow: metadata-driven filters, debounced remote calls, infinite scroll, highlights, provider summaries, recently viewed, and empty/loading states. **Completed**
+6. Add deployment tooling & documentation for Jolt hosting plus full regression/accessibility testing + README refresh. **In progress**
 
 ## Recent Activity
-- Logged initial requirements and design direction questions.
-- Captured further instructions on typography, certifications, improvements (URL state, legibility, deploy script, cache busting).
-- Received approval for typography pairing.
-- Created base project scaffolding: config, bootstrap/autoloader, cache store, HTTP helper, TMDB client service, cache storage directory.
-- Added Request helper, FilmService aggregator, and public API endpoint supporting metadata, discover listings, and highlight recommendations (genre-aware, cached).
-- Clarified testing/deployment schedule with user; documentation will note when credentials are required (only at deployment execution time).
-- Built responsive frontend shell (`public/index.php`, `assets/css/app.css`, `assets/js/app.js`) featuring glassy layout, mobile overlay structure, forced-refresh versioning, and dynamic font tokens sourced from config.
+- Captured full requirements + design inspiration, locked typography, provider naming, and highlight behavior.
+- Scaffolded config/bootstrap, filesystem cache store, TMDB client service, HTTP/Request helpers, and API endpoint (`public/api.php`).
+- Added FilmService to normalize filters, fetch details (runtime/certification/cast/providers), provide genre-aware highlights, and supply provider summaries.
+- Built frontend shell (`public/index.php`, `assets/css/app.css`) with mobile overlay filters, forced refresh script, and glass aesthetic tokens.
+- Implemented full client logic (`assets/js/app.js`): metadata loading, filter mirroring, URL sync, debounced API calls, IntersectionObserver infinite scroll, highlight cards, provider summary counts, desktop-only recently viewed chips, and graceful empty/loading states.
+- Updated documentation (README) + log with current status; next focus is deployment automation/testing.
