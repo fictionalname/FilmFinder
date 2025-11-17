@@ -43,8 +43,9 @@ function Load-DeployEnv {
 
 function Get-Setting {
     param($Key, $Default = "")
-    if ($env[$Key]) {
-        return $env[$Key]
+    $envValue = [System.Environment]::GetEnvironmentVariable($Key)
+    if (-not [string]::IsNullOrEmpty($envValue)) {
+        return $envValue
     }
     if ($DeployEnv.ContainsKey($Key)) {
         return $DeployEnv[$Key]
@@ -115,14 +116,14 @@ function Upload-File {
 [System.Net.ServicePointManager]::ServerCertificateValidationCallback = { return $true }
 
 $DeployEnv = Load-DeployEnv -Path $EnvFile
-$Host = Get-Setting -Key "DEPLOY_HOST"
-$User = Get-Setting -Key "DEPLOY_USER"
-$Pass = Get-Setting -Key "DEPLOY_PASS"
+$FtpHost = Get-Setting -Key "DEPLOY_HOST"
+$FtpUser = Get-Setting -Key "DEPLOY_USER"
+$FtpPass = Get-Setting -Key "DEPLOY_PASS"
 $PathValue = Get-Setting -Key "DEPLOY_PATH" -Default "/public_html/filmfinder"
 $Port = [int](Get-Setting -Key "DEPLOY_PORT" -Default "21")
 $UsePassive = [bool]::Parse((Get-Setting -Key "DEPLOY_PASSIVE" -Default "true"))
 
-if (-not $Host -or -not $User -or -not $Pass) {
+if (-not $FtpHost -or -not $FtpUser -or -not $FtpPass) {
     Write-Error "Missing DEPLOY_HOST/USER/PASS. Update $EnvFile or set environment variables."
     exit 1
 }
@@ -131,9 +132,9 @@ $RemoteRootPath = ($PathValue.Trim()).Trim("/")
 if ($RemoteRootPath -eq "." -or $RemoteRootPath -eq "") {
     $RemoteRootPath = ""
 }
-$BaseUri = "ftp://$Host`:$Port"
+$BaseUri = "ftp://$FtpHost`:$Port"
 
-$Credentials = New-Object System.Net.NetworkCredential($User, $Pass)
+$Credentials = New-Object System.Net.NetworkCredential($FtpUser, $FtpPass)
 
 Write-Host "Deploying to $BaseUri (TLS, passive=$UsePassive) -> root '$RemoteRootPath'"
 
