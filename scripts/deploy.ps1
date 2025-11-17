@@ -99,13 +99,7 @@ function Upload-File {
     $uri = "$BaseUri/$RemotePath"
     Write-Host "Uploading $LocalPath -> $uri"
     try {
-        $bytes = [System.IO.File]::ReadAllBytes($LocalPath)
-        $request = New-FtpRequest -Uri $uri -Method [System.Net.WebRequestMethods+Ftp]::UploadFile
-        $request.ContentLength = $bytes.Length
-        $stream = $request.GetRequestStream()
-        $stream.Write($bytes, 0, $bytes.Length)
-        $stream.Close()
-        $request.GetResponse() | Out-Null
+        $null = $WebClient.UploadFile($uri, "STOR", $LocalPath)
     } catch {
         $message = "Failed to upload {0}: {1}" -f $LocalPath, $_.Exception.Message
         Write-Warning $message
@@ -135,6 +129,9 @@ if ($RemoteRootPath -eq "." -or $RemoteRootPath -eq "") {
 $BaseUri = "ftp://$FtpHost`:$Port"
 
 $Credentials = New-Object System.Net.NetworkCredential($FtpUser, $FtpPass)
+$WebClient = New-Object System.Net.WebClient
+$WebClient.Credentials = $Credentials
+$WebClient.BaseAddress = $BaseUri + "/"
 
 Write-Host "Deploying to $BaseUri (TLS, passive=$UsePassive) -> root '$RemoteRootPath'"
 
@@ -177,4 +174,5 @@ foreach ($file in $files) {
 }
 
 Write-Host "Uploaded $count files."
+$WebClient.Dispose()
 
