@@ -125,14 +125,9 @@ function connectFtp(array $config)
     }
 
     if (!ftp_login($connect, $config['user'], $config['pass'])) {
-        if ($config['ssl']) {
-            ftp_raw($connect, 'AUTH TLS');
-            if (!@ftp_login($connect, $config['user'], $config['pass'])) {
-                fwrite(STDERR, "FTP login failed for {$config['user']} (even after forcing TLS).\n");
-                exit(1);
-            }
-        } else {
-            fwrite(STDERR, "FTP login failed for {$config['user']}.\n");
+        ftp_raw($connect, 'AUTH TLS');
+        if (!@ftp_login($connect, $config['user'], $config['pass'])) {
+            fwrite(STDERR, "FTP login failed for {$config['user']} (TLS retry failed).\n");
             exit(1);
         }
     }
