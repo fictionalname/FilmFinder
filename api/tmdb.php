@@ -18,8 +18,8 @@ const PROVIDERS = [
     350 => 'Apple',
 ];
 const WATCH_REGION = 'GB';
-const MIN_CHUNK_SIZE = 20;
-const MAX_CHUNK_SIZE = 100;
+const MIN_CHUNK_SIZE = 1;
+const MAX_CHUNK_SIZE = 1;
 
 if (!is_dir(DATA_DIR)) {
     mkdir(DATA_DIR, 0755, true);

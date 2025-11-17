@@ -1,7 +1,7 @@
 ï»¿const API_ENDPOINT = 'api/tmdb.php';
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w185';
 const CURRENT_YEAR = new Date().getFullYear();
-const CHUNK_FETCH_SIZE = 100;
+const CHUNK_FETCH_SIZE = 1;
 const CHUNK_DELAY_MS = 250;
 const PROVIDERS = [
   { id: 8, name: 'Netflix' },
@@ -31,11 +31,86 @@ const state = {
   sortOrder: 'newest',
 };
 
+const FILTER_STORAGE_KEY = 'filmFinderFilters';
+
+loadFilterState();
+
+function loadFilterState() {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  try {
+    const raw = localStorage.getItem(FILTER_STORAGE_KEY);
+    if (!raw) {
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed) {
+      return;
+    }
+    const providerIds = new Set(PROVIDERS.map((p) => p.id));
+    if (Array.isArray(parsed.providers)) {
+      const restored = parsed.providers
+        .map((id) => Number(id))
+        .filter((id) => providerIds.has(id));
+      if (restored.length) {
+        state.selectedProviders = new Set(restored);
+      }
+    }
+    if (Array.isArray(parsed.genres)) {
+      state.selectedGenres = new Set(parsed.genres.map((g) => Number(g)));
+    }
+    if (parsed.yearFrom) {
+      const year = Number(parsed.yearFrom);
+      if (!Number.isNaN(year)) {
+        state.yearFrom = year;
+      }
+    }
+    if (parsed.yearTo) {
+      const year = Number(parsed.yearTo);
+      if (!Number.isNaN(year)) {
+        state.yearTo = year;
+      }
+    }
+    if (typeof parsed.searchTerm === 'string') {
+      state.searchTerm = parsed.searchTerm;
+    }
+    if (typeof parsed.sortOrder === 'string') {
+      state.sortOrder = parsed.sortOrder;
+    }
+  } catch (error) {
+    console.error('Unable to load filters from storage', error);
+  }
+}
+
+function saveFilterState() {
+  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+    return;
+  }
+  const payload = {
+    providers: Array.from(state.selectedProviders),
+    genres: Array.from(state.selectedGenres),
+    yearFrom: state.yearFrom,
+    yearTo: state.yearTo,
+    searchTerm: state.searchTerm,
+    sortOrder: state.sortOrder,
+  };
+  localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(payload));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   populateYearSelectors();
   renderProviderControls();
   attachUIListeners();
   updateFiltersSpacing();
+  const searchInput = document.getElementById('text-search');
+  const sortSelect = document.getElementById('sort-order');
+  if (searchInput) {
+    searchInput.value = state.searchTerm;
+  }
+  if (sortSelect) {
+    sortSelect.value = state.sortOrder;
+  }
   const filtersToggle = document.getElementById('filters-toggle');
   const viewFilmsBtn = document.getElementById('view-films-btn');
   filtersToggle.addEventListener('click', () => showFilters());
@@ -183,7 +258,7 @@ function renderSummaryCard(overallStats = {}) {
     ).length;
     return `${provider.name}: ${showing}/${total}`;
   });
-  document.getElementById('summary-state').textContent = summaryParts.join(' · ') || 'Preparing films...';
+  document.getElementById('summary-state').textContent = summaryParts.join(' | ') || 'Preparing films...';
   updateFiltersSpacing();
 }
 
@@ -194,8 +269,9 @@ function renderProviderControls() {
     const label = document.createElement('label');
     const styleKey = PROVIDER_STYLES[provider.id] ?? 'default';
     label.className = `provider-chip provider-chip--${styleKey}`;
+    const checked = state.selectedProviders.has(provider.id) ? 'checked' : '';
     label.innerHTML = `
-      <input type="checkbox" data-provider="${provider.id}" checked />
+      <input type="checkbox" data-provider="${provider.id}" ${checked} />
       <span>${provider.name}</span>
     `;
     container.appendChild(label);
@@ -213,6 +289,7 @@ function attachUIListeners() {
         state.selectedProviders.delete(providerId);
       }
       applyFilters();
+      saveFilterState();
     }
   });
 
@@ -224,6 +301,7 @@ function attachUIListeners() {
       document.getElementById('year-to').value = state.yearTo;
     }
     applyFilters();
+    saveFilterState();
   });
 
   document.getElementById('year-to').addEventListener('change', (event) => {
@@ -234,16 +312,19 @@ function attachUIListeners() {
       document.getElementById('year-from').value = state.yearFrom;
     }
     applyFilters();
+    saveFilterState();
   });
 
   document.getElementById('text-search').addEventListener('input', (event) => {
     state.searchTerm = event.target.value.trim();
     applyFilters();
+    saveFilterState();
   });
 
   document.getElementById('sort-order').addEventListener('change', (event) => {
     state.sortOrder = event.target.value;
     applyFilters();
+    saveFilterState();
   });
 }
 
@@ -257,10 +338,10 @@ function populateYearSelectors() {
     fromSelect.innerHTML += option;
     toSelect.innerHTML += option;
   }
-  fromSelect.value = CURRENT_YEAR;
-  toSelect.value = CURRENT_YEAR;
-  state.yearFrom = CURRENT_YEAR;
-  state.yearTo = CURRENT_YEAR;
+  fromSelect.value = state.yearFrom >= 2020 ? state.yearFrom : CURRENT_YEAR;
+  toSelect.value = state.yearTo >= 2020 ? state.yearTo : CURRENT_YEAR;
+  state.yearFrom = Number(fromSelect.value);
+  state.yearTo = Number(toSelect.value);
 }
 
 function renderGenreGrid() {
@@ -270,8 +351,9 @@ function renderGenreGrid() {
   genres.forEach((genre) => {
     const label = document.createElement('label');
     label.className = 'genre-option';
+    const checked = state.selectedGenres.has(genre.id) ? 'checked' : '';
     label.innerHTML = `
-      <input type="checkbox" value="${genre.id}" />
+      <input type="checkbox" value="${genre.id}" ${checked} />
       <span>${genre.name}</span>
     `;
     grid.appendChild(label);
@@ -286,6 +368,7 @@ function renderGenreGrid() {
         state.selectedGenres.delete(genreId);
       }
       applyFilters();
+      saveFilterState();
     }
   };
 }
@@ -456,6 +539,10 @@ function hideFilters() {
   toggle.setAttribute('aria-expanded', 'false');
   toggle.style.display = 'block';
   updateFiltersSpacing();
+  const grid = document.getElementById('film-grid');
+  if (grid) {
+    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 function updateFiltersSpacing() {
@@ -474,4 +561,5 @@ window.addEventListener('resize', () => {
   clearTimeout(filtersResizeTimer);
   filtersResizeTimer = setTimeout(updateFiltersSpacing, 150);
 });
+
 
