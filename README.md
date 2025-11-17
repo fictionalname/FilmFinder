@@ -6,6 +6,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Project kickoff complete: requirements captured, design inspiration selected (glassy streaming UI concepts), architecture planning underway.
 - Clarifications received on typography (Space Grotesk for headings, Sora for body), certification scope (BBFC), improvements (URL-sharing filters, cache-busting refresh, deploy automation).
 - Backend foundations live: config/bootstrap, cache utilities, TMDB client, request helper, FilmService with normalization/enrichment, and `public/api.php` entry surfacing discover, metadata, and highlight endpoints.
+- Frontend shell implemented: PHP-driven `index.php` with forced refresh/version tokens, responsive glassy layout, provider summary row, highlight & film grid containers, floating filters FAB, and base JS for metadata loading + filter mirroring (desktop/mobile).
 - Highlights obey genre selections and automatically hide when no matches exist.
 
 ## Core Objectives
@@ -22,8 +23,8 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Accessibility (contrast/legibility) checks will gate visual choices; “recently viewed” section will only ship if it stays unobtrusive on small screens.
 
 ## Next Actions
-1. Build frontend shell + responsive filter layout consuming the new backend.
-2. Layer on debounced filter logic, infinite scroll, highlights banner, and rating/provider UI polish.
-3. Wire deployment automation/documentation and finalize testing.
+1. Wire data flow: debounced requests, provider counts, highlights, infinite scroll, URL/state syncing, empty states, and testing harness.
+2. Implement deployment automation/documentation plus environment credential guidance for Jolt.
+3. Finalize accessibility/contrast reviews, forced-refresh verification, and regression testing ahead of release.
 
 _This README will evolve as functionality lands; expect detailed setup instructions and feature summaries alongside each milestone._

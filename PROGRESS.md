@@ -38,9 +38,9 @@
 1. Initialize project structure (public/ assets, PHP entry points). **[Completed]**
 2. Establish configuration + secure TMDB client wrapper with caching layer (filesystem-based, TTL 30–60 min). **[Completed]**
 3. Build API endpoints for discover queries, metadata (genres/providers), and highlights with caching + error handling. **[Completed]**
-4. Develop frontend scaffold (HTML + JS) with responsive layout, filters, and data flow. **[In progress]**
-5. Implement infinite scroll, debounced filters, highlights, rating enrichments, and UI polish, then start staged testing (unit-level helpers + end-to-end UX checks).
-6. Add deployment tooling/documentation for pushing to Jolt, including credential placeholders and secure usage notes, followed by final regression testing.
+4. Develop frontend scaffold (HTML + JS) with responsive layout, filters, and base shell. **[Completed]**
+5. Implement data flow: debounced filters, remote fetches, infinite scroll, highlight population, provider summaries, and begin staged testing.
+6. Add deployment tooling/documentation for pushing to Jolt, including credential placeholders and secure usage notes, followed by final regression testing + accessibility sweep.
 
 ## Recent Activity
 - Logged initial requirements and design direction questions.
@@ -49,3 +49,4 @@
 - Created base project scaffolding: config, bootstrap/autoloader, cache store, HTTP helper, TMDB client service, cache storage directory.
 - Added Request helper, FilmService aggregator, and public API endpoint supporting metadata, discover listings, and highlight recommendations (genre-aware, cached).
 - Clarified testing/deployment schedule with user; documentation will note when credentials are required (only at deployment execution time).
+- Built responsive frontend shell (`public/index.php`, `assets/css/app.css`, `assets/js/app.js`) featuring glassy layout, mobile overlay structure, forced-refresh versioning, and dynamic font tokens sourced from config.
