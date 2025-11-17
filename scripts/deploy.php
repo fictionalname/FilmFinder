@@ -22,11 +22,16 @@ $env = array_merge(
     getenv()
 );
 
+$deployPath = rtrim(resolveEnv($env, 'DEPLOY_PATH', '/public_html/filmfinder'), '/');
+if ($deployPath === '') {
+    $deployPath = '.';
+}
+
 $config = [
     'host' => resolveEnv($env, 'DEPLOY_HOST'),
     'user' => resolveEnv($env, 'DEPLOY_USER'),
     'pass' => resolveEnv($env, 'DEPLOY_PASS'),
-    'path' => rtrim(resolveEnv($env, 'DEPLOY_PATH', '/public_html/filmfinder'), '/'),
+    'path' => $deployPath,
     'port' => (int) resolveEnv($env, 'DEPLOY_PORT', '21'),
     'ssl' => filter_var(resolveEnv($env, 'DEPLOY_SSL', 'true'), FILTER_VALIDATE_BOOLEAN),
     'passive' => filter_var(resolveEnv($env, 'DEPLOY_PASSIVE', 'true'), FILTER_VALIDATE_BOOLEAN),
@@ -150,12 +155,14 @@ final class FtpUploader
     /** @var resource */
     private $connection;
     private string $remoteRoot;
+    private string $basePath;
     private array $ignore = [
         '.git',
         '.github',
         '.env',
         '.env.local',
         '.env.deploy',
+        '.env.deploy.example',
         'node_modules',
         'storage/cache/*.cache.php',
     ];
@@ -163,7 +170,9 @@ final class FtpUploader
     public function __construct($connection, string $remoteRoot)
     {
         $this->connection = $connection;
-        $this->remoteRoot = rtrim($remoteRoot, '/');
+        $this->basePath = ftp_pwd($connection) ?: '/';
+        $remoteRoot = trim($remoteRoot);
+        $this->remoteRoot = $remoteRoot === '' ? '.' : rtrim($remoteRoot, '/');
     }
 
     public function uploadDirectory(string $directory): void
@@ -180,7 +189,14 @@ final class FtpUploader
                 continue;
             }
 
-            $remotePath = $this->remoteRoot . '/' . str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
+            $relativeNormalized = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
+            if ($relativeNormalized === '') {
+                $remotePath = $this->remoteRoot;
+            } elseif ($this->remoteRoot === '.' || $this->remoteRoot === '') {
+                $remotePath = $relativeNormalized;
+            } else {
+                $remotePath = $this->remoteRoot . '/' . $relativeNormalized;
+            }
 
             if ($item->isDir()) {
                 $this->ensureRemoteDirectory($remotePath);
@@ -212,16 +228,30 @@ final class FtpUploader
 
     private function ensureRemoteDirectory(string $remotePath): void
     {
-        $segments = explode('/', $remotePath);
+        if ($remotePath === '.' || $remotePath === './' || $remotePath === '') {
+            return;
+        }
+
+        $isAbsolute = str_starts_with($remotePath, '/');
+        $normalized = $remotePath;
+        if ($isAbsolute) {
+            $normalized = substr($normalized, 1);
+        }
+        $normalized = ltrim($normalized, './');
+        $segments = $normalized === '' ? [] : explode('/', $normalized);
         $path = '';
 
         foreach ($segments as $segment) {
             if ($segment === '') {
                 continue;
             }
-            $path .= '/' . $segment;
+            if ($path === '') {
+                $path = $isAbsolute ? '/' . $segment : $segment;
+            } else {
+                $path .= '/' . $segment;
+            }
             if (@ftp_chdir($this->connection, $path)) {
-                ftp_chdir($this->connection, '/');
+                ftp_chdir($this->connection, $this->basePath);
                 continue;
             }
             if (!@ftp_mkdir($this->connection, $path)) {
