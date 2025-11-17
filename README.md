@@ -4,9 +4,9 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 
 ## Current Status
 - Requirements + visual direction captured; typography locked to Space Grotesk (headings) and Sora (body) for consistent futuristic styling.
-- Backend foundations complete: bootstrap/config, filesystem cache store, TMDB client wrapper, FilmService (normalisation, runtime/certification/cast enrichment, provider summaries, genre-aware highlights), and a single API entry (`public/api.php`) exposing discover/metadata/highlights endpoints.
+- Backend foundations complete: bootstrap/config, filesystem cache store, TMDB client wrapper, FilmService (normalisation, runtime/certification/cast enrichment, provider summaries, genre-aware highlights), and a single API entry (`api.php`) exposing discover/metadata/highlights endpoints.
 - Frontend experience live: PHP-driven `index.php` with forced refresh/version tokens, responsive glass/glow layout, floating Filters FAB/overlay, provider summary line, highlight carousel stub, film grid, and desktop-only recently viewed panel.
-- Client logic implemented (`public/assets/js/app.js`): metadata loading, filter mirroring across desktop/mobile, query-string state sync, debounced backend calls, IntersectionObserver infinite scroll, genre-aware highlights, provider count updates, empty/loading states, and localStorage-powered recently viewed chips (hidden on small screens).
+- Client logic implemented (`assets/js/app.js`): metadata loading, filter mirroring across desktop/mobile, query-string state sync, debounced backend calls, IntersectionObserver infinite scroll, genre-aware highlights, provider count updates, empty/loading states, and localStorage-powered recently viewed chips (hidden on small screens).
 - Film cards show runtime, BBFC certification, cast, provider badges, trailer + TMDB links, and IMDb / Rotten Tomatoes badges derived heuristically from TMDB scores (permitted data source).
 
 ## Core Objectives
@@ -41,7 +41,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 ## Testing Roadmap
 1. Manual regression: confirm remote filtering, infinite scroll, highlights, trailer/TMDB links, URL sharing, and forced refresh across Chrome, Edge, Firefox, Safari, and iOS/Android mobile browsers.
 2. Accessibility: keyboard navigation for filters/cards, focus outlines, and contrast verification against WCAG AA.
-3. Backend smoke tests: `php -l` on entry points and sample curl calls to `public/api.php?action=metadata` & `action=discover` to verify hosting environment compatibility.
+3. Backend smoke tests: `php -l` on entry points and sample curl calls to `api.php?action=metadata` & `action=discover` to verify hosting environment compatibility.
 
 ## Next Actions
 1. Execute the testing roadmap above and capture any issues/fixes.

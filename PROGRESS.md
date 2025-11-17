@@ -28,9 +28,9 @@
 
 ## Recent Activity
 - Captured full requirements + design inspiration, locked typography, provider naming, and highlight behavior.
-- Scaffolded config/bootstrap, filesystem cache store, TMDB client service, HTTP/Request helpers, and API endpoint (`public/api.php`).
+- Scaffolded config/bootstrap, filesystem cache store, TMDB client service, HTTP/Request helpers, and API endpoint (`api.php`).
 - Added FilmService to normalize filters, fetch details (runtime/certification/cast/providers), provide genre-aware highlights, and supply provider summaries.
-- Built frontend shell (`public/index.php`, `assets/css/app.css`) with mobile overlay filters, forced refresh script, and glass aesthetic tokens.
+- Built frontend shell (`index.php`, `assets/css/app.css`) with mobile overlay filters, forced refresh script, and glass aesthetic tokens.
 - Implemented full client logic (`assets/js/app.js`): metadata loading, filter mirroring, URL sync, debounced API calls, IntersectionObserver infinite scroll, highlight cards, provider summary counts, desktop-only recently viewed chips, and graceful empty/loading states.
 - Added FTPS-ready deployment helper (`scripts/deploy.php` + `.env.deploy.example`) and published instructions in README.
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
