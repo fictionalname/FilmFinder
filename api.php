@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 declare(strict_types=1);
 
@@ -8,37 +8,36 @@ use App\Support\Request;
 
 require __DIR__ . '/bootstrap.php';
 
- = new Request();
- = new FilmService();
- = ->input('action', 'discover');
- = ->all();
-unset(['action']);
+$request = new Request();
+$service = new FilmService();
+$action = $request->input('action', 'discover');
+$filters = $request->all();
+unset($filters['action']);
 
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 
 try {
-    switch () {
+    switch ($action) {
         case 'metadata':
-             = ->metadata();
+            $metadata = $service->metadata();
             JsonResponse::send([
-                'providers' => ['providers'],
-                'genres' => ['genres'],
+                'providers' => $metadata['providers'],
+                'genres' => $metadata['genres'],
             ]);
             break;
 
         case 'highlights':
-            JsonResponse::send(->highlight());
+            JsonResponse::send($service->highlight($filters));
             break;
 
         case 'discover':
         default:
-            JsonResponse::send(->listMovies());
+            JsonResponse::send($service->listMovies($filters));
             break;
     }
-} catch (Throwable ) {
+} catch (Throwable $exception) {
     JsonResponse::send([
         'error' => true,
-        'message' => ->getMessage(),
+        'message' => $exception->getMessage(),
     ], 500);
 }
-
