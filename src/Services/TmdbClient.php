@@ -90,14 +90,11 @@ final class TmdbClient
             'with_watch_providers' => implode('|', $providerIds),
             'include_adult' => 'false',
             'include_video' => 'false',
+            'with_watch_monetization_types' => 'flatrate',
             'sort_by' => $filters['sort'] ?? 'popularity.desc',
             'page' => (int) ($filters['page'] ?? 1),
             'with_origin_country' => 'US|GB',
         ]);
-
-        if (!empty($filters['query'])) {
-            $params['with_keywords'] = $filters['query'];
-        }
 
         if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
             $params['primary_release_date.gte'] = $filters['start_date'] ?? '2000-01-01';
@@ -106,6 +103,10 @@ final class TmdbClient
 
         if (!empty($filters['genres']) && is_array($filters['genres'])) {
             $params['with_genres'] = implode(',', array_map('trim', $filters['genres']));
+        }
+
+        if (!empty($filters['vote_count_gte'])) {
+            $params['vote_count.gte'] = (int) $filters['vote_count_gte'];
         }
 
         return $params;
