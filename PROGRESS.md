@@ -11,9 +11,16 @@
 - Provider labels should read **Netflix**, **Amazon**, **Disney**, **Apple** for compact badges.
 - Genres will be fetched dynamically from TMDB and cached for long-lived reuse.
 - Visual direction starts with Dribbble “Glassy Streaming App Concepts,” but layout/theme must stay flexible so we can pivot to other inspirations.
+- Typography: will select a cinematic, highly legible Google Font pairing optimized for cross-browser compatibility.
+- Certifications: BBFC (GB) data is sufficient; will fall back gracefully if TMDB lacks UK-specific ratings.
+- Filter state will be encoded in the URL to allow bookmarking/sharing.
+- “Recently viewed” ribbon will be implemented only if it can remain unobtrusive on mobile (likely a horizontally scrollable chip list tucked below the hero on larger screens and hidden/collapsible on phones).
+- Accessibility/contrast checks are required before approving any palette changes.
+- Deployment automation must include a scriptable path to push updates to hosting, plus documentation.
+- Browser cache must be busted reliably (asset versioning + cache-control headers) to force refreshes, addressing prior Chrome mobile issues.
 
 ## Outstanding Questions / Clarifications
-1. None pending; awaiting confirmation that all gathered details are sufficient to begin implementation or any extra preferences (e.g., typography choices, copy tone).
+1. Need confirmation on highlight curation approach suggestion (see README & status updates once defined).
 
 ## Planned Next Steps
 1. Initialize project structure (public/ assets, PHP entry points).
@@ -25,4 +32,5 @@
 
 ## Recent Activity
 - Logged initial requirements and design direction questions.
-- Awaiting user confirmation/improvements before proceeding with build.
+- Captured further instructions on typography, certifications, improvements (URL state, legibility, deploy script, cache busting).
+- Awaiting confirmation on highlight curation proposal to begin implementation.
