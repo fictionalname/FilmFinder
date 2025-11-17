@@ -108,21 +108,41 @@ function connectFtp(array $config)
         fwrite(STDERR, "PHP FTP extension is required to run this script.\n");
         exit(1);
     }
-    $connect = ftp_connect($config['host'], $config['port'], 15);
 
-    if (!$connect) {
-        fwrite(STDERR, "Unable to connect to {$config['host']}:{$config['port']}\n");
+    $plain = ftp_connect($config['host'], $config['port'], 15);
+    if ($plain && attemptLogin($plain, $config, true)) {
+        return $plain;
+    }
+
+    if (is_resource($plain)) {
+        @ftp_close($plain);
+    }
+
+    if (!function_exists('ftp_ssl_connect')) {
+        fwrite(STDERR, "FTP login failed for {$config['user']} and SSL upgrade is unavailable.\n");
         exit(1);
     }
 
-    ftp_pasv($connect, $config['passive']);
-    ftp_raw($connect, 'AUTH TLS');
-    if (!ftp_login($connect, $config['user'], $config['pass'])) {
-        fwrite(STDERR, "FTP login failed for {$config['user']} (after AUTH TLS).\n");
-        exit(1);
+    $secure = @ftp_ssl_connect($config['host'], $config['port'], 15);
+    if ($secure && attemptLogin($secure, $config, false)) {
+        return $secure;
     }
 
-    return $connect;
+    if (is_resource($secure)) {
+        @ftp_close($secure);
+    }
+
+    fwrite(STDERR, "Unable to log in to {$config['host']} as {$config['user']}.\n");
+    exit(1);
+}
+
+function attemptLogin($connection, array $config, bool $sendAuthTls): bool
+{
+    ftp_pasv($connection, $config['passive']);
+    if ($sendAuthTls) {
+        ftp_raw($connection, 'AUTH TLS');
+    }
+    return @ftp_login($connection, $config['user'], $config['pass']);
 }
 
 final class FtpUploader
