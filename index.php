@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Support\Config;
 
-require __DIR__ . '/../bootstrap.php';
+require __DIR__ . '/bootstrap.php';
 
 $version = Config::get('app.version');
 $fonts = Config::get('fonts');
