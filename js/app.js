@@ -1,7 +1,7 @@
 ﻿const API_ENDPOINT = 'api/tmdb.php';
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w185';
 const CURRENT_YEAR = new Date().getFullYear();
-const CHUNK_FETCH_SIZE = 1;
+const CHUNK_FETCH_SIZE = 20;
 const CHUNK_DELAY_MS = 250;
 const PROVIDERS = [
   { id: 8, name: 'Netflix' },
@@ -258,7 +258,7 @@ function renderSummaryCard(overallStats = {}) {
     ).length;
     return `${provider.name}: ${showing}/${total}`;
   });
-  document.getElementById('summary-state').textContent = summaryParts.join(' | ') || 'Preparing films...';
+  document.getElementById('summary-state').textContent = summaryParts.join(' ') || 'Preparing films...';
   updateFiltersSpacing();
 }
 

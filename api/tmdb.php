@@ -19,7 +19,7 @@ const PROVIDERS = [
 ];
 const WATCH_REGION = 'GB';
 const MIN_CHUNK_SIZE = 1;
-const MAX_CHUNK_SIZE = 1;
+const MAX_CHUNK_SIZE = 20;
 
 if (!is_dir(DATA_DIR)) {
     mkdir(DATA_DIR, 0755, true);
@@ -52,7 +52,7 @@ try {
             if (!$providerId || !isset(PROVIDERS[$providerId])) {
                 respond(['error' => 'Invalid provider id'], 400);
             }
-            $chunkSize = isset($_GET['chunkSize']) ? (int)$_GET['chunkSize'] : 100;
+            $chunkSize = isset($_GET['chunkSize']) ? (int)$_GET['chunkSize'] : 20;
             respond(handleChunk($providerId, $chunkSize));
             break;
         case 'films':
@@ -105,11 +105,6 @@ function initializeMetadata(): array
     }
     saveMetadata($meta);
     return $meta;
-}
-
-function saveMetadata(array $data): void
-{
-    file_put_contents(METADATA_FILE, json_encode($data, JSON_PRETTY_PRINT));
 }
 
 function createProviderMeta(int $id): array
