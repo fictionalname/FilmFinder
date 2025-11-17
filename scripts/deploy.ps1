@@ -90,7 +90,8 @@ function Upload-File {
         $stream.Close()
         $request.GetResponse() | Out-Null
     } catch {
-        Write-Warning "Failed to upload $LocalPath: $($_.Exception.Message)"
+        $message = "Failed to upload {0}: {1}" -f $LocalPath, $_.Exception.Message
+        Write-Warning $message
     }
 }
 
