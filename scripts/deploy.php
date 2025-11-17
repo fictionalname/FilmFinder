@@ -108,31 +108,19 @@ function connectFtp(array $config)
         fwrite(STDERR, "PHP FTP extension is required to run this script.\n");
         exit(1);
     }
-
-    if ($config['ssl']) {
-        if (!function_exists('ftp_ssl_connect')) {
-            fwrite(STDERR, "PHP FTP SSL support is required for DEPLOY_SSL=true\n");
-            exit(1);
-        }
-        $connect = ftp_ssl_connect($config['host'], $config['port'], 15);
-    } else {
-        $connect = ftp_connect($config['host'], $config['port'], 15);
-    }
+    $connect = ftp_connect($config['host'], $config['port'], 15);
 
     if (!$connect) {
         fwrite(STDERR, "Unable to connect to {$config['host']}:{$config['port']}\n");
         exit(1);
     }
 
-    if (!ftp_login($connect, $config['user'], $config['pass'])) {
-        ftp_raw($connect, 'AUTH TLS');
-        if (!@ftp_login($connect, $config['user'], $config['pass'])) {
-            fwrite(STDERR, "FTP login failed for {$config['user']} (TLS retry failed).\n");
-            exit(1);
-        }
-    }
-
     ftp_pasv($connect, $config['passive']);
+    ftp_raw($connect, 'AUTH TLS');
+    if (!ftp_login($connect, $config['user'], $config['pass'])) {
+        fwrite(STDERR, "FTP login failed for {$config['user']} (after AUTH TLS).\n");
+        exit(1);
+    }
 
     return $connect;
 }
