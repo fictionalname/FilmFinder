@@ -4,7 +4,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 
 -## Current Status
 - Project kickoff complete: requirements captured, design inspiration selected (glassy streaming UI concepts), architecture planning underway.
-- Clarifications received on typography (choose legible futuristic pairing), certification scope (BBFC), improvements (URL-sharing filters, cache-busting refresh, deploy automation).
+- Clarifications received on typography (Space Grotesk for headings, Sora for body), certification scope (BBFC), improvements (URL-sharing filters, cache-busting refresh, deploy automation).
 - Implementation pending confirmation on highlight curation approach.
  - Highlights will obey the user’s genre selections and disappear when no matching films are available.
 
