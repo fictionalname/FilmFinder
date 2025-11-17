@@ -20,6 +20,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Forced refresh handled via `data-build` tokens + localStorage to address Chrome mobile caching issues.
 - IMDb/Rotten Tomatoes indicators follow TMDB-score heuristics to satisfy UI requirements without third-party APIs; this is documented in `PROGRESS.md`.
 - Recently viewed ribbon is desktop/tablet only to preserve mobile real estate, per requirement.
+- Cache layer auto-disables itself if the hosting environment blocks writes to `storage/cache`, so PHP warnings won’t corrupt API JSON responses.
 
 ## Deployment Guide
 1. Copy `.env.deploy.example` to `.env.deploy` (kept out of git) and fill in your Jolt FTP/SFTP credentials:

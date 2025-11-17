@@ -34,4 +34,5 @@
 - Implemented full client logic (`assets/js/app.js`): metadata loading, filter mirroring, URL sync, debounced API calls, IntersectionObserver infinite scroll, highlight cards, provider summary counts, desktop-only recently viewed chips, and graceful empty/loading states.
 - Added FTPS-ready deployment helper (`scripts/deploy.php` + `.env.deploy.example`) and published instructions in README.
 - Added verbose PowerShell deployment helper (`scripts/deploy.ps1`) that mirrors the `.env.deploy` settings and reports every directory/file transfer.
+- Hardened CacheStore so it silently disables itself when the host can’t create/write the cache directory (prevents PHP warnings from breaking JSON responses on constrained shared hosting).
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
