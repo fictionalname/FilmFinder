@@ -84,11 +84,11 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             <div class="date-range">
                 <label>
                     <span>From</span>
-                    <input type="date" data-filter="start_date">
+                    <select data-filter="start_year"></select>
                 </label>
                 <label>
                     <span>To</span>
-                    <input type="date" data-filter="end_date">
+                    <select data-filter="end_year"></select>
                 </label>
             </div>
         </section>
@@ -99,17 +99,17 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
                 <span>Title / keyword</span>
                 <input type="search" placeholder="Search films..." data-filter="query">
             </label>
-            <label class="field">
-                <span>Sort order</span>
-                <select data-filter="sort">
-                    <option value="popularity.desc">Popularity ↓</option>
-                    <option value="popularity.asc">Popularity ↑</option>
-                    <option value="primary_release_date.desc">Newest</option>
-                    <option value="primary_release_date.asc">Oldest</option>
-                    <option value="vote_average.desc">Best Rated</option>
-                    <option value="vote_count.desc">Most Rated</option>
-                </select>
-            </label>
+                <label class="field">
+                    <span>Sort order</span>
+                    <select data-filter="sort">
+                        <option value="primary_release_date.desc">Newest</option>
+                        <option value="primary_release_date.asc">Oldest</option>
+                        <option value="popularity.desc">Popularity ↓</option>
+                        <option value="popularity.asc">Popularity ↑</option>
+                        <option value="vote_average.desc">Best Rated</option>
+                        <option value="vote_count.desc">Most Rated</option>
+                    </select>
+                </label>
         </section>
 
         <section class="filters-section">
@@ -143,11 +143,11 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
                     <div class="date-range">
                         <label>
                             <span>From</span>
-                            <input type="date" data-filter-mobile="start_date">
+                            <select data-filter-mobile="start_year"></select>
                         </label>
                         <label>
                             <span>To</span>
-                            <input type="date" data-filter-mobile="end_date">
+                            <select data-filter-mobile="end_year"></select>
                         </label>
                     </div>
                 </section>
@@ -157,17 +157,17 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
                         <span>Title / keyword</span>
                         <input type="search" placeholder="Search films..." data-filter-mobile="query">
                     </label>
-                    <label class="field">
-                        <span>Sort order</span>
-                        <select data-filter-mobile="sort">
-                            <option value="popularity.desc">Popularity ↓</option>
-                            <option value="popularity.asc">Popularity ↑</option>
-                            <option value="primary_release_date.desc">Newest</option>
-                            <option value="primary_release_date.asc">Oldest</option>
-                            <option value="vote_average.desc">Best Rated</option>
-                            <option value="vote_count.desc">Most Rated</option>
-                        </select>
-                    </label>
+                <label class="field">
+                    <span>Sort order</span>
+                    <select data-filter-mobile="sort">
+                        <option value="primary_release_date.desc">Newest</option>
+                        <option value="primary_release_date.asc">Oldest</option>
+                        <option value="popularity.desc">Popularity ↓</option>
+                        <option value="popularity.asc">Popularity ↑</option>
+                        <option value="vote_average.desc">Best Rated</option>
+                        <option value="vote_count.desc">Most Rated</option>
+                    </select>
+                </label>
                 </section>
                 <section class="filters-section">
                     <h2>Genres</h2>
@@ -183,9 +183,9 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
     <main class="content">
         <header class="content__header">
             <div class="status-pill" data-role="results-count">Loading films…</div>
-            <div class="view-controls">
-                <button class="ghost-button" data-action="toggle-layout" disabled>Grid</button>
-                <button class="ghost-button" data-action="toggle-layout" disabled>List</button>
+            <div class="view-controls" data-role="layout-toggle">
+                <button class="ghost-button is-active" data-layout="grid">Grid</button>
+                <button class="ghost-button" data-layout="list">List</button>
             </div>
         </header>
 
@@ -209,11 +209,11 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             </div>
         </section>
 
-        <section class="film-grid" data-role="film-grid">
+        <section class="film-grid" data-role="film-grid" data-layout="grid">
             <!-- Movie cards go here -->
         </section>
 
-        <div class="load-state" data-role="loading-indicator" hidden>
+        <div class="load-state" data-role="loading-indicator">
             <span class="pulse"></span>
             <span data-role="loading-message">Fetching cinematic gems…</span>
         </div>
@@ -222,6 +222,7 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             <p>Try adjusting the genres or providers to widen the search.</p>
             <button class="ghost-button" data-action="reset-filters">Reset Filters</button>
         </div>
+        <div class="infinite-sentinel" data-role="infinite-sentinel"></div>
     </main>
 
     <button class="floating-filter-btn" data-action="open-overlay">

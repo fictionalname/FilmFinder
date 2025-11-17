@@ -3,6 +3,16 @@ const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 const RECENT_KEY = 'filmFinderRecentlyViewed';
 const DEBOUNCE_DELAY = 350;
 
+const YEARS = (() => {
+    const start = 1980;
+    const current = new Date().getFullYear() + 1;
+    const list = [];
+    for (let year = current; year >= start; year -= 1) {
+        list.push(year);
+    }
+    return list;
+})();
+
 const state = {
     metadata: {
         providers: {},
@@ -11,9 +21,9 @@ const state = {
     filters: {
         providers: [],
         genres: [],
-        start_date: '',
-        end_date: '',
-        sort: 'popularity.desc',
+        start_year: '',
+        end_year: '',
+        sort: 'primary_release_date.desc',
         query: '',
     },
     pagination: {
@@ -50,18 +60,20 @@ const elements = {
     recentSection: document.querySelector('[data-role="recently-viewed"]'),
     recentChips: document.querySelector('[data-role="recently-viewed-chips"]'),
     clearRecentButton: document.querySelector('[data-action="clear-recent"]'),
+    sentinel: document.querySelector('[data-role="infinite-sentinel"]'),
+    layoutToggle: document.querySelector('[data-role="layout-toggle"]'),
 };
 
 const desktopInputs = {
-    start_date: document.querySelector('[data-filter="start_date"]'),
-    end_date: document.querySelector('[data-filter="end_date"]'),
+    start_year: document.querySelector('[data-filter="start_year"]'),
+    end_year: document.querySelector('[data-filter="end_year"]'),
     query: document.querySelector('[data-filter="query"]'),
     sort: document.querySelector('[data-filter="sort"]'),
 };
 
 const mobileInputs = {
-    start_date: document.querySelector('[data-filter-mobile="start_date"]'),
-    end_date: document.querySelector('[data-filter-mobile="end_date"]'),
+    start_year: document.querySelector('[data-filter-mobile="start_year"]'),
+    end_year: document.querySelector('[data-filter-mobile="end_year"]'),
     query: document.querySelector('[data-filter-mobile="query"]'),
     sort: document.querySelector('[data-filter-mobile="sort"]'),
 };
@@ -81,10 +93,12 @@ async function init() {
         sanitizeFilters();
         renderProviders();
         renderGenres();
+        renderYearOptions();
         bindFilterInputs();
         bindApplyButtons();
         bindOverlayControls();
         bindRecentControls();
+        bindLayoutToggle();
         syncInputMirrors();
         updateProviderSummary();
         await applyFilters({ resetPage: true });
@@ -109,8 +123,8 @@ function parseFiltersFromUrl() {
     const genres = params.get('genres');
     state.filters.providers = providers ? providers.split(',').filter(Boolean) : state.filters.providers;
     state.filters.genres = genres ? genres.split(',').filter(Boolean) : state.filters.genres;
-    state.filters.start_date = params.get('start_date') || state.filters.start_date;
-    state.filters.end_date = params.get('end_date') || state.filters.end_date;
+    state.filters.start_year = params.get('start_year') || state.filters.start_year;
+    state.filters.end_year = params.get('end_year') || state.filters.end_year;
     state.filters.sort = params.get('sort') || state.filters.sort;
     state.filters.query = params.get('query') || state.filters.query;
 }
@@ -126,7 +140,9 @@ function sanitizeFilters() {
 
     if (state.metadata.genres.length) {
         const allowed = state.metadata.genres.map((genre) => String(genre.id));
-        state.filters.genres = state.filters.genres.filter((id) => allowed.includes(String(id)));
+        state.filters.genres = state.filters.genres
+            .map((id) => String(id))
+            .filter((id) => allowed.includes(id));
     }
 }
 
@@ -189,6 +205,27 @@ function renderGenres() {
     bindGenreEvents();
 }
 
+function renderYearOptions() {
+    const populate = (select, current) => {
+        if (!select) return;
+        select.innerHTML = '<option value="">Any</option>';
+        YEARS.forEach((year) => {
+            const option = document.createElement('option');
+            option.value = String(year);
+            option.textContent = year;
+            if (String(year) === String(current)) {
+                option.selected = true;
+            }
+            select.appendChild(option);
+        });
+    };
+
+    populate(desktopInputs.start_year, state.filters.start_year);
+    populate(desktopInputs.end_year, state.filters.end_year);
+    populate(mobileInputs.start_year, state.filters.start_year);
+    populate(mobileInputs.end_year, state.filters.end_year);
+}
+
 function bindProviderEvents() {
     [elements.providerListDesktop, elements.providerListMobile].forEach((container) => {
         if (!container) return;
@@ -225,11 +262,12 @@ function toggleProvider(key) {
 }
 
 function toggleGenre(genreId) {
-    const current = new Set(state.filters.genres);
-    if (current.has(genreId)) {
-        current.delete(genreId);
+    const normalizedId = String(genreId);
+    const current = new Set(state.filters.genres.map(String));
+    if (current.has(normalizedId)) {
+        current.delete(normalizedId);
     } else {
-        current.add(genreId);
+        current.add(normalizedId);
     }
     state.filters.genres = Array.from(current);
     renderGenres();
@@ -289,6 +327,19 @@ function bindOverlayControls() {
     window.addEventListener('resize', handleResizeForOverlay);
 }
 
+function bindLayoutToggle() {
+    if (!elements.layoutToggle || !elements.filmGrid) return;
+    elements.layoutToggle.addEventListener('click', (event) => {
+        const target = event.target.closest('[data-layout]');
+        if (!target) return;
+        const layout = target.dataset.layout;
+        elements.layoutToggle.querySelectorAll('[data-layout]').forEach((btn) => {
+            btn.classList.toggle('is-active', btn === target);
+        });
+        elements.filmGrid.dataset.layout = layout;
+    });
+}
+
 function bindRecentControls() {
     if (elements.clearRecentButton) {
         elements.clearRecentButton.addEventListener('click', () => {
@@ -313,9 +364,9 @@ function resetFilters() {
     state.filters = {
         providers: Object.keys(state.metadata.providers),
         genres: [],
-        start_date: '',
-        end_date: '',
-        sort: 'popularity.desc',
+        start_year: '',
+        end_year: '',
+        sort: 'primary_release_date.desc',
         query: '',
     };
     renderProviders();
@@ -403,13 +454,13 @@ function updateUrlFromFilters() {
     if (state.filters.genres.length) {
         params.set('genres', state.filters.genres.join(','));
     }
-    if (state.filters.start_date) {
-        params.set('start_date', state.filters.start_date);
+    if (state.filters.start_year) {
+        params.set('start_year', state.filters.start_year);
     }
-    if (state.filters.end_date) {
-        params.set('end_date', state.filters.end_date);
+    if (state.filters.end_year) {
+        params.set('end_year', state.filters.end_year);
     }
-    if (state.filters.sort && state.filters.sort !== 'popularity.desc') {
+    if (state.filters.sort && state.filters.sort !== 'primary_release_date.desc') {
         params.set('sort', state.filters.sort);
     }
     if (state.filters.query) {
@@ -458,14 +509,19 @@ async function fetchMovies(page = 1) {
 }
 
 function buildFilterParams() {
-    return {
+    const params = {
         providers: state.filters.providers,
         genres: state.filters.genres,
-        start_date: state.filters.start_date || undefined,
-        end_date: state.filters.end_date || undefined,
         sort: state.filters.sort,
         query: state.filters.query || undefined,
     };
+    if (state.filters.start_year) {
+        params.start_date = `${state.filters.start_year}-01-01`;
+    }
+    if (state.filters.end_year) {
+        params.end_date = `${state.filters.end_year}-12-31`;
+    }
+    return params;
 }
 
 function renderMovies(movies, { append = false } = {}) {
@@ -519,9 +575,15 @@ function createMovieCard(movie) {
     meta.className = 'film-card__meta';
     const metaBits = [];
     if (movie.runtime) metaBits.push(`${movie.runtime} min`);
-    if (movie.certification) metaBits.push(`BBFC ${movie.certification}`);
     if (movie.cast?.length) metaBits.push(`Cast: ${movie.cast.join(', ')}`);
-    meta.textContent = metaBits.join(' • ') || 'Details updating…';
+    const metaText = metaBits.join(' • ');
+    if (metaText) {
+        meta.append(metaText);
+    }
+    const certificationIcon = buildCertificationIcon(movie.certification);
+    if (certificationIcon) {
+        meta.appendChild(certificationIcon);
+    }
     card.appendChild(meta);
 
     const summary = document.createElement('p');
@@ -600,6 +662,17 @@ function buildRatingBadge(label, score, suffix = '') {
     return badge;
 }
 
+function buildCertificationIcon(cert) {
+    if (!cert) return null;
+    const normalized = String(cert).trim().toUpperCase().replace(/\s+/g, '');
+    if (!normalized) return null;
+    const span = document.createElement('span');
+    span.className = 'bbfc-icon';
+    span.dataset.cert = normalized;
+    span.title = `BBFC ${normalized}`;
+    return span;
+}
+
 function createProviderBadge(provider) {
     const badge = document.createElement('span');
     badge.className = 'provider-badge';
@@ -641,7 +714,7 @@ function setLoadingIndicator(visible, message = 'Fetching cinematic gems…') {
 }
 
 function setupInfiniteScroll(hasMore) {
-    if (!elements.loadingIndicator) return;
+    if (!elements.sentinel) return;
     if (state.infiniteObserver) {
         state.infiniteObserver.disconnect();
         state.infiniteObserver = null;
@@ -650,6 +723,7 @@ function setupInfiniteScroll(hasMore) {
         elements.loadingIndicator.hidden = true;
         return;
     }
+    elements.loadingIndicator.hidden = false;
     state.infiniteObserver = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (entry.isIntersecting && !state.loading && state.pagination.page < state.pagination.totalPages) {
@@ -658,7 +732,7 @@ function setupInfiniteScroll(hasMore) {
         });
     }, { rootMargin: '200px' });
 
-    state.infiniteObserver.observe(elements.loadingIndicator);
+    state.infiniteObserver.observe(elements.sentinel);
 }
 
 async function fetchHighlights() {
@@ -675,6 +749,10 @@ async function fetchHighlights() {
 
 function renderHighlights() {
     if (!elements.highlightCards || !elements.highlightSection) return;
+    if (window.matchMedia('(max-width: 900px)').matches) {
+        elements.highlightSection.hidden = true;
+        return;
+    }
     if (!state.highlights.length) {
         elements.highlightSection.hidden = true;
         elements.highlightCards.innerHTML = '';
