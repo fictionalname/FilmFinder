@@ -43,8 +43,8 @@ function Load-DeployEnv {
 
 function Get-Setting {
     param($Key, $Default = "")
-    if ($env:$Key) {
-        return $env:$Key
+    if ($env[$Key]) {
+        return $env[$Key]
     }
     if ($DeployEnv.ContainsKey($Key)) {
         return $DeployEnv[$Key]
@@ -130,7 +130,7 @@ $RemoteRootPath = ($PathValue.Trim()).Trim("/")
 if ($RemoteRootPath -eq "." -or $RemoteRootPath -eq "") {
     $RemoteRootPath = ""
 }
-$BaseUri = "ftp://$Host:$Port"
+$BaseUri = "ftp://$Host`:$Port"
 
 $Credentials = New-Object System.Net.NetworkCredential($User, $Pass)
 
