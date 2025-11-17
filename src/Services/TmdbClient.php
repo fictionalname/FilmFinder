@@ -121,6 +121,32 @@ final class TmdbClient
             $url .= '?' . http_build_query($params);
         }
 
+        try {
+            [$statusCode, $response] = $this->executeCurlRequest($url, $params, $method);
+        } catch (RuntimeException $e) {
+            [$statusCode, $response] = $this->executeStreamRequest($url, $params, $method);
+        }
+
+        $data = json_decode($response, true);
+
+        if ($statusCode >= 400) {
+            $message = $data['status_message'] ?? 'Unknown TMDB error';
+            throw new RuntimeException("TMDB responded with {$statusCode}: {$message}");
+        }
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new RuntimeException('Unable to decode TMDB response: ' . json_last_error_msg());
+        }
+
+        return $data;
+    }
+
+    private function executeCurlRequest(string $url, array $params, string $method): array
+    {
+        if (!function_exists('curl_init')) {
+            throw new RuntimeException('cURL extension not available');
+        }
+
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, (int) Config::get('tmdb.timeout', 15));
@@ -143,17 +169,46 @@ final class TmdbClient
             throw new RuntimeException('TMDB request error: ' . $curlError);
         }
 
-        $data = json_decode($response, true);
+        return [$statusCode, (string) $response];
+    }
 
-        if ($statusCode >= 400) {
-            $message = $data['status_message'] ?? 'Unknown TMDB error';
-            throw new RuntimeException("TMDB responded with {$statusCode}: {$message}");
+    private function executeStreamRequest(string $url, array $params, string $method): array
+    {
+        $headers = [
+            'Accept: application/json',
+            'Authorization: Bearer ' . Config::get('tmdb.read_token'),
+        ];
+
+        $contextOptions = [
+            'http' => [
+                'method' => $method,
+                'header' => implode("\r\n", $headers) . "\r\n",
+                'timeout' => (int) Config::get('tmdb.timeout', 15),
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ],
+        ];
+
+        if ($method === 'POST') {
+            $body = json_encode($params);
+            $contextOptions['http']['content'] = $body;
+            $contextOptions['http']['header'] .= "Content-Type: application/json\r\n";
         }
 
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new RuntimeException('Unable to decode TMDB response: ' . json_last_error_msg());
+        $context = stream_context_create($contextOptions);
+        $response = @file_get_contents($url, false, $context);
+
+        if ($response === false) {
+            $error = error_get_last();
+            throw new RuntimeException('TMDB stream request error: ' . ($error['message'] ?? 'unknown'));
         }
 
-        return $data;
+        $statusLine = $http_response_header[0] ?? 'HTTP/1.1 200';
+        preg_match('/\s(\d{3})\s/', $statusLine, $matches);
+        $statusCode = isset($matches[1]) ? (int) $matches[1] : 200;
+
+        return [$statusCode, (string) $response];
     }
 }
