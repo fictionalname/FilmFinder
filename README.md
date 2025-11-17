@@ -21,9 +21,31 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - IMDb/Rotten Tomatoes indicators follow TMDB-score heuristics to satisfy UI requirements without third-party APIs; this is documented in `PROGRESS.md`.
 - Recently viewed ribbon is desktop/tablet only to preserve mobile real estate, per requirement.
 
+## Deployment Guide
+1. Copy `.env.deploy.example` to `.env.deploy` (kept out of git) and fill in your Jolt FTP/SFTP credentials:
+   ```
+   DEPLOY_HOST=ftp.jolt.co.uk
+   DEPLOY_USER=cpanel-username
+   DEPLOY_PASS=secret
+   DEPLOY_PATH=/public_html/filmfinder
+   DEPLOY_SSL=true
+   ```
+   (Override via environment variables if you prefer.)
+2. Ensure PHP CLI has the FTP extension enabled.
+3. Run `php scripts/deploy.php` from the project root. The script:
+   - Connects over FTPS (or plain FTP if `DEPLOY_SSL=false`);
+   - Recursively uploads all project files except git/artifact directories;
+   - Creates destination folders automatically and reports each uploaded file with a dot indicator.
+4. Clear the remote `storage/cache` folder if you need fresh TMDB data (cached files are time-bound but can be deleted safely).
+
+## Testing Roadmap
+1. Manual regression: confirm remote filtering, infinite scroll, highlights, trailer/TMDB links, URL sharing, and forced refresh across Chrome, Edge, Firefox, Safari, and iOS/Android mobile browsers.
+2. Accessibility: keyboard navigation for filters/cards, focus outlines, and contrast verification against WCAG AA.
+3. Backend smoke tests: `php -l` on entry points and sample curl calls to `public/api.php?action=metadata` & `action=discover` to verify hosting environment compatibility.
+
 ## Next Actions
-1. Implement deployment automation/documentation (e.g., secure rsync/SFTP script) for pushing builds to Jolt, noting where credentials should be supplied.
-2. Run regression + accessibility sweeps (contrast checks, keyboard flows, Chrome/Firefox/Safari/iOS/Android) once API + frontend wiring stabilizes; capture results in README/testing notes.
-3. Final polish: provider badge colour validation, copy tweaks, and final README usage instructions before handoff.
+1. Execute the testing roadmap above and capture any issues/fixes.
+2. Validate deploy script against actual Jolt credentials (once provided) and document any host-specific nuances.
+3. Final polish: provider badge colour validation, copy tweaks, and README usage notes post-testing.
 
 _This README stays in sync with each milestone; refer to `PROGRESS.md` for the detailed running log._

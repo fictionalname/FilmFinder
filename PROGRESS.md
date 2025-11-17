@@ -24,7 +24,7 @@
 3. Build backend API endpoints (discover, metadata, highlights) with caching + error handling. **Completed**
 4. Develop responsive frontend shell (HTML/CSS/JS) with filter UI, glass layout, and forced-refresh logic. **Completed**
 5. Implement client data flow: metadata-driven filters, debounced remote calls, infinite scroll, highlights, provider summaries, recently viewed, and empty/loading states. **Completed**
-6. Add deployment tooling & documentation for Jolt hosting plus full regression/accessibility testing + README refresh. **In progress**
+6. Add deployment tooling & documentation for Jolt hosting plus full regression/accessibility testing + README refresh. **Completed (tooling/docs)** – testing to follow per roadmap.
 
 ## Recent Activity
 - Captured full requirements + design inspiration, locked typography, provider naming, and highlight behavior.
@@ -32,4 +32,5 @@
 - Added FilmService to normalize filters, fetch details (runtime/certification/cast/providers), provide genre-aware highlights, and supply provider summaries.
 - Built frontend shell (`public/index.php`, `assets/css/app.css`) with mobile overlay filters, forced refresh script, and glass aesthetic tokens.
 - Implemented full client logic (`assets/js/app.js`): metadata loading, filter mirroring, URL sync, debounced API calls, IntersectionObserver infinite scroll, highlight cards, provider summary counts, desktop-only recently viewed chips, and graceful empty/loading states.
-- Updated documentation (README) + log with current status; next focus is deployment automation/testing.
+- Added FTPS-ready deployment helper (`scripts/deploy.php` + `.env.deploy.example`) and published instructions in README.
+- Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
