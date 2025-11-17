@@ -35,14 +35,15 @@
 1. Need confirmation on highlight curation approach suggestion (see README & status updates once defined).
 
 ## Planned Next Steps
-1. Initialize project structure (public/ assets, PHP entry points).
-2. Establish configuration + secure TMDB client wrapper with caching layer (filesystem-based, TTL 30–60 min).
+1. Initialize project structure (public/ assets, PHP entry points). **[In progress]**
+2. Establish configuration + secure TMDB client wrapper with caching layer (filesystem-based, TTL 30–60 min). **[In progress]**
 3. Build API endpoints for discover queries and metadata (genres/providers).
 4. Develop frontend scaffold (HTML + JS) with responsive layout, filters, and data flow.
-5. Implement infinite scroll, debounced filters, and UI polish.
-6. Iteratively test, document, and push commits.
+5. Implement infinite scroll, debounced filters, highlights, and UI polish.
+6. Iteratively test, document, push commits, and prepare deployment tooling.
 
 ## Recent Activity
 - Logged initial requirements and design direction questions.
 - Captured further instructions on typography, certifications, improvements (URL state, legibility, deploy script, cache busting).
-- Awaiting confirmation on highlight curation proposal to begin implementation.
+- Received approval for typography pairing.
+- Created base project scaffolding: config, bootstrap/autoloader, cache store, HTTP helper, TMDB client service, cache storage directory.
