@@ -42,9 +42,7 @@ final class FilmService
 
         foreach ($results as $movie) {
             $formatted = $this->formatMovie($movie);
-            if ($this->matchesProviderSelection($formatted, $filters['providers'])) {
-                $movies[] = $formatted;
-            }
+            $movies[] = $formatted;
         }
 
         return [
@@ -89,9 +87,6 @@ final class FilmService
 
         foreach ($discover['results'] ?? [] as $movie) {
             $formatted = $this->formatMovie($movie);
-            if (!$this->matchesProviderSelection($formatted, $filters['providers'])) {
-                continue;
-            }
             $movies[] = $formatted;
             if (count($movies) >= 3) {
                 break;
@@ -356,18 +351,4 @@ final class FilmService
         ];
     }
 
-    private function matchesProviderSelection(array $movie, array $selectedProviders): bool
-    {
-        if (empty($selectedProviders)) {
-            return false;
-        }
-
-        foreach ($selectedProviders as $providerKey) {
-            if (!empty($movie['providers'][$providerKey]['available'])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
