@@ -41,7 +41,7 @@
 - Ensured the floating Filters FAB hides itself while the overlay is open so the film view stays uncluttered and reappears as soon as the sheet is dismissed.
 - Added optional parallax background drift via `<body data-scroll-effects="enabled">`, keeping touch and desktop browsers performant while allowing the motion to be disabled instantly.
 - Release window now prevents the “To” year from being earlier than the “From” year so filtering stays consistent no matter how the range shifts.
-- Added a floating glass “status pill” that hovers over the content and expands on tap/hover to surface per-provider film counts while keeping the sidebar lean.
+- Added a floating glass “status pill” that hovers over the content and displays just the provider/film totals while keeping the sidebar lean.
 - Genre filters now use OR logic (TMDB `with_genres` pipe-separated) so selecting multiple genres returns any matching film.
 - Ensured provider/genre filter buttons register a single click handler so subsequent taps no longer cancel themselves and multi-selection works reliably.
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.

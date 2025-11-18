@@ -50,9 +50,7 @@ const elements = {
     genreListMobile: document.querySelector('[data-role="genre-list-mobile"]'),
     filtersOverlay: document.querySelector('[data-role="filters-overlay"]'),
     floatingButton: document.querySelector('[data-action="open-overlay"]'),
-    floatingStatus: document.querySelector('[data-role="floating-status"]'),
     floatingStatusSummary: document.querySelector('[data-role="floating-status-summary"]'),
-    floatingStatusList: document.querySelector('[data-role="floating-status-list"]'),
     closeOverlayButton: document.querySelector('[data-action="close-overlay"]'),
     applyOverlayButton: document.querySelector('[data-action="apply-overlay"]'),
     applyFilterButtons: document.querySelectorAll('[data-action="apply-filters"]'),
@@ -92,7 +90,6 @@ const mobileInputs = {
 const scheduleFiltersUpdate = debounce(() => applyFilters({ resetPage: true }), DEBOUNCE_DELAY);
 
 init();
-let floatingStatusOutsideHandler = null;
 
 async function init() {
     parseFiltersFromUrl();
@@ -115,7 +112,6 @@ async function init() {
         loadPersistedLayout();
         syncInputMirrors();
         initScrollEffects();
-        initFloatingStatus();
         updateProviderSummary();
         await applyFilters({ resetPage: true });
     } catch (error) {
@@ -832,49 +828,11 @@ function toggleEmptyState() {
     }
 }
 
-function renderFloatingStatus(summary = null) {
+function renderFloatingStatus() {
     if (!elements.floatingStatusSummary) return;
     const total = state.pagination.totalResults || 0;
     const providerCount = state.filters.providers.length;
     elements.floatingStatusSummary.textContent = `${providerCount} providers · ${total.toLocaleString()} films`;
-    if (!elements.floatingStatusList) return;
-    const activeProviders = state.filters.providers;
-    elements.floatingStatusList.innerHTML = '';
-    Object.entries(state.metadata.providers).forEach(([key, provider]) => {
-        const item = document.createElement('li');
-        const isActive = activeProviders.includes(key);
-        item.innerHTML = `
-            <span>${provider.label}</span>
-            <span class="provider-status${isActive ? ' is-active' : ''}" aria-label="${provider.label} ${isActive ? 'selected' : 'not selected'}"></span>
-        `;
-        elements.floatingStatusList.appendChild(item);
-    });
-}
-
-function initFloatingStatus() {
-    if (!elements.floatingStatus) return;
-    const toggle = elements.floatingStatus.querySelector('[data-action="toggle-status"]');
-    if (!toggle) return;
-    toggle.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const expanded = toggle.getAttribute('aria-expanded') === 'true';
-        const nextOpen = !expanded;
-        elements.floatingStatus.classList.toggle('is-open', nextOpen);
-        toggle.setAttribute('aria-expanded', nextOpen.toString());
-        renderFloatingStatus();
-    });
-    floatingStatusOutsideHandler = (event) => {
-        if (!elements.floatingStatus.contains(event.target)) {
-            closeFloatingStatus(toggle);
-        }
-    };
-    document.addEventListener('click', floatingStatusOutsideHandler);
-}
-
-function closeFloatingStatus(toggle) {
-    if (!elements.floatingStatus || !elements.floatingStatus.classList.contains('is-open')) return;
-    elements.floatingStatus.classList.remove('is-open');
-    toggle?.setAttribute('aria-expanded', 'false');
 }
 
 function setLoadingIndicator(visible, message = 'Fetching cinematic gems…') {

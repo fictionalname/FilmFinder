@@ -176,12 +176,8 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
 
     <main class="content">
         <div class="floating-status" data-role="floating-status">
-            <button class="floating-status__pill" type="button" data-action="toggle-status" aria-expanded="false">
+            <div class="floating-status__pill">
                 <span data-role="floating-status-summary">0 providers · 0 films</span>
-                <span class="floating-status__chevron" aria-hidden="true"></span>
-            </button>
-            <div class="floating-status__details" data-role="floating-status-details">
-                <ul data-role="floating-status-list"></ul>
             </div>
         </div>
         <header class="content__header">
