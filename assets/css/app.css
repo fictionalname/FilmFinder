@@ -578,11 +578,6 @@ select option {
     }
     .film-grid {
         gap: var(--ff-spacing-sm);
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    }
-    .film-card__poster {
-        margin-bottom: 0.35rem;
-        max-height: 160px;
     }
 }
 
