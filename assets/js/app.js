@@ -99,7 +99,6 @@ async function init() {
     state.recentlyViewed = loadRecentlyViewed();
     renderRecentlyViewed();
 
-    elements.resultsCount.textContent = 'Loading filters…';
     try {
         await loadMetadata();
         sanitizeFilters();
@@ -121,7 +120,7 @@ async function init() {
         await applyFilters({ resetPage: true });
     } catch (error) {
         console.error(error);
-        elements.resultsCount.textContent = 'Unable to load filter metadata';
+        renderFloatingStatus();
     }
 
     window.addEventListener('popstate', () => {
@@ -581,7 +580,7 @@ async function fetchMovies(page = 1) {
         }
     } catch (error) {
         console.error(error);
-        elements.resultsCount.textContent = 'Error loading films';
+        renderFloatingStatus();
     } finally {
         state.loading = false;
         setLoadingIndicator(false);
@@ -812,9 +811,6 @@ function getInitials(title = '') {
 }
 
 function updateResultsCount() {
-    if (!elements.resultsCount) return;
-    const { totalResults, page, totalPages } = state.pagination;
-    elements.resultsCount.textContent = `${totalResults.toLocaleString()} films · Page ${page} of ${Math.max(totalPages, 1)}`;
     renderFloatingStatus();
 }
 
