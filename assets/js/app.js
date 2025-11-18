@@ -382,6 +382,8 @@ function bindFilterInputs() {
     });
 }
 
+
+
 function bindApplyButtons() {
     elements.applyFilterButtons.forEach((button) => {
         button.addEventListener('click', () => applyFilters({ resetPage: true }));
@@ -1026,3 +1028,4 @@ function debounce(fn, delay = 300) {
         timer = setTimeout(() => fn.apply(null, args), delay);
     };
 }
+

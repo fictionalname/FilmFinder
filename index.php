@@ -147,8 +147,10 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
                     <div class="genre-list" data-role="genre-list-mobile"></div>
                 </section>
                 <section class="filters-section filters-section--bottom">
-                    <details class="filters-collapse" open>
-                        <summary>Search & Sort</summary>
+                    <details class="filters-collapse">
+                        <summary>
+                            <span>Search & Sort</span>
+                        </summary>
                         <label class="field">
                             <span>Title / keyword</span>
                             <input type="search" placeholder="Search films..." data-filter-mobile="query">

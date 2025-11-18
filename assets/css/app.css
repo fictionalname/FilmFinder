@@ -1,4 +1,4 @@
-﻿:root {
+:root {
     color-scheme: dark;
     --ff-font-heading: "Space Grotesk", "Sora", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --ff-font-body: "Sora", "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -580,27 +580,6 @@ select option {
     padding-bottom: var(--ff-spacing-xs);
 }
 
-.filters-collapse[open] summary {
-    margin-bottom: var(--ff-spacing-xs);
-}
-
-.filters-collapse + .field,
-.filters-collapse .field {
-    margin-bottom: var(--ff-spacing-xs);
-}
-
-.filters-footer {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
-    margin-top: var(--ff-spacing-sm);
-}
-
-.filters-footer button {
-    width: 100%;
-    text-align: center;
-}
-
 .floating-status {
     position: fixed;
     top: 1rem;
@@ -615,7 +594,7 @@ select option {
     border-radius: 999px;
     padding: 0.5rem 1.5rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(5, 7, 10, 0.65);
+    background: rgba(5, 7, 10, 0.35);
     backdrop-filter: blur(18px);
     display: inline-flex;
     align-items: center;
@@ -623,6 +602,7 @@ select option {
     letter-spacing: 0.06em;
     color: var(--ff-color-strong);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    white-space: nowrap;
 }
 
 .floating-filter-btn {
@@ -631,11 +611,19 @@ select option {
     right: 1.2rem;
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(5, 7, 11, 0.9);
-    padding: 0.5rem 0.9rem;
-    font-weight: 600;
+    background: linear-gradient(135deg, rgba(110, 139, 255, 0.25), rgba(0, 198, 255, 0.35));
+    padding: 0.65rem 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    box-shadow: 0 12px 30px rgba(15, 32, 75, 0.65);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: none;
     z-index: 60;
+}
+.floating-filter-btn:hover,
+.floating-filter-btn:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 30px rgba(15, 32, 75, 0.85);
 }
 
 .floating-filter-btn.is-hidden {
@@ -740,3 +728,4 @@ select option {
     right: 0.4rem;
     bottom: 0.4rem;
 }
+
