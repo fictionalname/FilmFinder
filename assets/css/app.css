@@ -586,6 +586,12 @@ select option {
     .floating-filter-btn {
         display: inline-flex;
     }
+    .view-controls {
+        display: none;
+    }
+    .content__header {
+        display: none;
+    }
 }
 
 @media (max-width: 768px) {

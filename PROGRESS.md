@@ -37,4 +37,5 @@
 - Hardened CacheStore so it silently disables itself when the host can't create/write the cache directory (prevents PHP warnings from breaking JSON responses on constrained shared hosting).
 - Added HTTP stream fallback to the TMDB client so metadata/film responses succeed even when cURL isn't available on shared hosting.
 - Overhauled the UI per design feedback: smaller spacing, rectangular chips, live provider counters that also deselect services, multi-genre selection, year-only release filters, grid/list toggle, BBFC icons, mobile-only highlight hiding, visible mobile filter FAB, compact TMDB/trailer buttons, and optimized infinite scrolling with a sentinel element.
+- Hidden the top header/status block on small screens so mobile users only see films and the floating Filter button.
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
