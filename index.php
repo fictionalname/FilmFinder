@@ -50,7 +50,7 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
         })();
     </script>
 </head>
-<body class="app-shell">
+<body class="app-shell" data-scroll-effects="enabled">
 <noscript>
     <div class="noscript">
         JavaScript is required to use <?= htmlspecialchars($appName) ?>. Please enable it and refresh.

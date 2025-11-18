@@ -68,6 +68,12 @@ const elements = {
     layoutToggle: document.querySelector('[data-role="layout-toggle"]'),
 };
 
+const scrollEffectsState = {
+    enabled: Boolean(document.body?.dataset?.scrollEffects === 'enabled'),
+    observer: null,
+    frame: null,
+};
+
 const desktopInputs = {
     start_year: document.querySelector('[data-filter="start_year"]'),
     end_year: document.querySelector('[data-filter="end_year"]'),
@@ -105,6 +111,7 @@ async function init() {
         bindLayoutToggle();
         loadPersistedLayout();
         syncInputMirrors();
+        initScrollEffects();
         updateProviderSummary();
         await applyFilters({ resetPage: true });
     } catch (error) {
@@ -590,9 +597,67 @@ function renderMovies(movies, { append = false } = {}) {
     }
     const fragment = document.createDocumentFragment();
     movies.forEach((movie) => {
-        fragment.appendChild(createMovieCard(movie));
+        const card = createMovieCard(movie);
+        fragment.appendChild(card);
+        observeFilmCard(card);
     });
     elements.filmGrid.appendChild(fragment);
+}
+
+function initScrollEffects() {
+    if (!scrollEffectsState.enabled) return;
+    setupCardObserver();
+    scheduleParallax();
+    window.addEventListener('scroll', scheduleParallax, { passive: true });
+    window.addEventListener('resize', scheduleParallax);
+}
+
+function setupCardObserver() {
+    if (typeof IntersectionObserver === 'undefined') return;
+    scrollEffectsState.observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    scrollEffectsState.observer?.unobserve(entry.target);
+                }
+            });
+        },
+        { threshold: 0.15 }
+    );
+}
+
+function observeFilmCard(card) {
+    if (!card) return;
+    if (!scrollEffectsState.enabled || !scrollEffectsState.observer) {
+        card.classList.add('is-visible');
+        return;
+    }
+    card.classList.remove('is-visible');
+    scrollEffectsState.observer.observe(card);
+}
+
+function scheduleParallax() {
+    if (!scrollEffectsState.enabled) return;
+    if (scrollEffectsState.frame !== null) return;
+    scrollEffectsState.frame = window.requestAnimationFrame(() => {
+        scrollEffectsState.frame = null;
+        updateParallaxValues();
+    });
+}
+
+function updateParallaxValues() {
+    const doc = document.documentElement;
+    const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1);
+    const progress = Math.min(window.scrollY / maxScroll, 1);
+    const x1 = progress * 40 - 20;
+    const y1 = progress * 24 - 12;
+    const x2 = progress * -30 + 15;
+    const y2 = progress * -18 + 9;
+    doc.style.setProperty('--parallax-offset-x-1', `${x1}px`);
+    doc.style.setProperty('--parallax-offset-y-1', `${y1}px`);
+    doc.style.setProperty('--parallax-offset-x-2', `${x2}px`);
+    doc.style.setProperty('--parallax-offset-y-2', `${y2}px`);
 }
 
 function createMovieCard(movie) {

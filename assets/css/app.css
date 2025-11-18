@@ -14,6 +14,10 @@
     --ff-spacing-sm: 0.6rem;
     --ff-spacing-md: 1rem;
     --ff-spacing-lg: 1.4rem;
+    --parallax-offset-x-1: 0px;
+    --parallax-offset-y-1: 0px;
+    --parallax-offset-x-2: 0px;
+    --parallax-offset-y-2: 0px;
 }
 
 * {
@@ -26,8 +30,16 @@ body {
     font-family: var(--ff-font-body);
     font-size: 15px;
     line-height: 1.45;
-    background: radial-gradient(circle at 5% 20%, rgba(49, 86, 255, 0.2), transparent 50%),
-        radial-gradient(circle at 90% 0%, rgba(0, 183, 255, 0.22), transparent 40%),
+    background: radial-gradient(
+            circle at calc(5% + var(--parallax-offset-x-1, 0px)) calc(20% + var(--parallax-offset-y-1, 0px)),
+            rgba(49, 86, 255, 0.2),
+            transparent 50%
+        ),
+        radial-gradient(
+            circle at calc(90% + var(--parallax-offset-x-2, 0px)) calc(0% + var(--parallax-offset-y-2, 0px)),
+            rgba(0, 183, 255, 0.22),
+            transparent 40%
+        ),
         var(--ff-color-bg);
     color: var(--ff-color-strong);
 }
@@ -287,6 +299,18 @@ select option {
 
 .film-grid[data-layout="list"] {
     grid-template-columns: 1fr;
+}
+
+body[data-scroll-effects="enabled"] .film-card {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    will-change: transform, opacity;
+}
+
+body[data-scroll-effects="enabled"] .film-card.is-visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .film-card {

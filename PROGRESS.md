@@ -39,4 +39,5 @@
 - Overhauled the UI per design feedback: smaller spacing, rectangular chips, live provider counters that also deselect services, multi-genre selection, year-only release filters, grid/list toggle, BBFC icons, mobile-only highlight hiding, visible mobile filter FAB, compact TMDB/trailer buttons, and optimized infinite scrolling with a sentinel element.
 - Hidden the top header/status block on small screens so mobile users only see films and the floating Filter button.
 - Ensured the floating Filters FAB hides itself while the overlay is open so the film view stays uncluttered and reappears as soon as the sheet is dismissed.
+- Added optional scroll effects (parallax background drift + card reveal) that activate when `<body data-scroll-effects="enabled">`, keeping touch and desktop browsers performant while allowing the feature to shut off instantly.
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
