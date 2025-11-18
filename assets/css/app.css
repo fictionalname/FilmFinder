@@ -125,7 +125,9 @@ select {
 }
 
 .provider-pill[data-active="true"],
-.genre-chip[data-active="true"] {
+.provider-pill.is-active,
+.genre-chip[data-active="true"],
+.genre-chip.is-active {
     border-color: var(--ff-color-accent);
     background: rgba(110, 139, 255, 0.2);
     color: #fff;

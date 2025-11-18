@@ -27,6 +27,14 @@ final class TmdbClient
     public function discoverMovies(array $filters): array
     {
         $ttl = (int) Config::get('cache.ttl.discover', 1800);
+        if (!empty($filters['query'])) {
+            $params = $this->buildSearchParams($filters);
+            $cacheKey = 'search_' . md5(json_encode($params));
+            return $this->cache->remember($cacheKey, $ttl, function () use ($params) {
+                return $this->request('search/movie', $params);
+            });
+        }
+
         $params = $this->buildDiscoverParams($filters);
         $cacheKey = 'discover_' . md5(json_encode($params));
 
@@ -109,11 +117,18 @@ final class TmdbClient
             $params['vote_count.gte'] = (int) $filters['vote_count_gte'];
         }
 
-        if (!empty($filters['query'])) {
-            $params['with_text_query'] = trim((string) $filters['query']);
-        }
-
         return $params;
+    }
+
+    private function buildSearchParams(array $filters): array
+    {
+        return [
+            'language' => $this->defaultParams['language'] ?? 'en-GB',
+            'query' => trim((string) $filters['query']),
+            'page' => (int) ($filters['page'] ?? 1),
+            'include_adult' => 'false',
+            'region' => $this->defaultParams['watch_region'] ?? 'GB',
+        ];
     }
 
     private function request(string $endpoint, array $params = [], string $method = 'GET'): array

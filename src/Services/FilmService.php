@@ -41,7 +41,10 @@ final class FilmService
         $movies = [];
 
         foreach ($results as $movie) {
-            $movies[] = $this->formatMovie($movie);
+            $formatted = $this->formatMovie($movie);
+            if ($this->matchesProviderSelection($formatted, $filters['providers'])) {
+                $movies[] = $formatted;
+            }
         }
 
         return [
@@ -84,12 +87,16 @@ final class FilmService
             $discover = $this->tmdb->discoverMovies($filters);
             $movies = [];
 
-            foreach ($discover['results'] ?? [] as $movie) {
-                $movies[] = $this->formatMovie($movie);
-                if (count($movies) >= 3) {
-                    break;
-                }
+        foreach ($discover['results'] ?? [] as $movie) {
+            $formatted = $this->formatMovie($movie);
+            if (!$this->matchesProviderSelection($formatted, $filters['providers'])) {
+                continue;
             }
+            $movies[] = $formatted;
+            if (count($movies) >= 3) {
+                break;
+            }
+        }
 
             return $movies;
         });
@@ -347,5 +354,20 @@ final class FilmService
                 'applied' => $filters,
             ],
         ];
+    }
+
+    private function matchesProviderSelection(array $movie, array $selectedProviders): bool
+    {
+        if (empty($selectedProviders)) {
+            return false;
+        }
+
+        foreach ($selectedProviders as $providerKey) {
+            if (!empty($movie['providers'][$providerKey]['available'])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

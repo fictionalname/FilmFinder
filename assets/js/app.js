@@ -136,6 +136,7 @@ function parseFiltersFromUrl() {
 
     if (!urlFiltersProvided) {
         loadPersistedFilters();
+        updateProviderSummary();
     }
 }
 
@@ -203,7 +204,10 @@ function renderProviders() {
             button.type = 'button';
             button.className = 'provider-pill';
             button.dataset.provider = key;
-            button.dataset.active = selected.includes(key).toString();
+            const active = selected.includes(key);
+            button.dataset.active = active.toString();
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
             button.innerHTML = `
                 <span class="provider-pill__dot" style="background:${provider.color};"></span>
                 ${provider.label}
@@ -227,7 +231,10 @@ function renderGenres() {
             button.type = 'button';
             button.className = 'genre-chip';
             button.dataset.genre = String(genre.id);
-            button.dataset.active = state.filters.genres.includes(String(genre.id)).toString();
+            const active = state.filters.genres.includes(String(genre.id));
+            button.dataset.active = active.toString();
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
             button.textContent = genre.name;
             container.appendChild(button);
         });
@@ -438,16 +445,28 @@ function updateProviderSummary(summary = null) {
     if (!line) return;
     line.innerHTML = '';
     Object.entries(state.metadata.providers).forEach(([key, provider]) => {
-        const badge = document.createElement('span');
+        const badge = document.createElement('button');
+        badge.type = 'button';
         badge.className = 'summary-badge';
         const active = state.filters.providers.includes(key);
         const count = summary && summary[key] ? summary[key].count : '—';
         badge.style.borderColor = active ? provider.color : 'var(--ff-color-outline)';
+        badge.dataset.provider = key;
+        badge.dataset.active = active.toString();
+        badge.setAttribute('aria-pressed', active ? 'true' : 'false');
         badge.innerHTML = `
             <span class="badge-dot" style="background:${provider.color};"></span>
             ${provider.label} · <strong>${count}</strong>
         `;
         line.appendChild(badge);
+    });
+
+    line.querySelectorAll('button[data-provider]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            const key = btn.dataset.provider;
+            toggleProvider(key);
+            scheduleFiltersUpdate();
+        });
     });
 }
 
@@ -725,6 +744,15 @@ function toggleEmptyState() {
     elements.emptyState.hidden = hasResults;
     if (!hasResults) {
         elements.filmGrid.innerHTML = '';
+        const title = elements.emptyState.querySelector('h3');
+        const body = elements.emptyState.querySelector('p');
+        if (state.filters.providers.length === 0) {
+            if (title) title.textContent = 'Select a provider to get started';
+            if (body) body.textContent = 'Choose at least one streaming service to see available films.';
+        } else if (title && body) {
+            title.textContent = 'No films matched those filters';
+            body.textContent = 'Try adjusting providers, genres, search, or years to widen the search.';
+        }
     }
 }
 
