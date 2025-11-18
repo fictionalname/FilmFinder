@@ -578,22 +578,11 @@ select option {
     }
     .film-grid {
         gap: var(--ff-spacing-sm);
-        grid-template-columns: 1fr;
-    }
-    .film-card {
-        flex-direction: row;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
     .film-card__poster {
-        width: 25%;
-        max-width: 120px;
-    }
-    .film-card__body {
-        padding-left: var(--ff-spacing-sm);
-    }
-    .film-card__summary {
-        width: 100%;
-        order: 2;
-        margin-top: 0.4rem;
+        margin-bottom: 0.35rem;
+        max-height: 160px;
     }
 }
 

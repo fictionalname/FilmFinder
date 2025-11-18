@@ -612,21 +612,24 @@ function createMovieCard(movie) {
     }
     card.appendChild(poster);
 
+    const body = document.createElement('div');
+    body.className = 'film-card__body';
+
     if (movie.release_year) {
         const year = document.createElement('span');
         year.className = 'year-pill';
         year.textContent = movie.release_year;
-        card.appendChild(year);
+        body.appendChild(year);
     }
 
     const title = document.createElement('h3');
     title.textContent = movie.title;
-    card.appendChild(title);
+    body.appendChild(title);
 
     const genreLine = document.createElement('p');
     genreLine.className = 'film-card__genres';
     genreLine.textContent = movie.genres?.join(' • ') || 'Genre unknown';
-    card.appendChild(genreLine);
+    body.appendChild(genreLine);
 
     const meta = document.createElement('div');
     meta.className = 'film-card__meta';
@@ -634,12 +637,12 @@ function createMovieCard(movie) {
     if (movie.runtime) metaBits.push(`${movie.runtime} min`);
     if (movie.cast?.length) metaBits.push(`Cast: ${movie.cast.join(', ')}`);
     meta.textContent = metaBits.join(' • ') || 'Details updating…';
-    card.appendChild(meta);
+    body.appendChild(meta);
 
     const summary = document.createElement('p');
     summary.className = 'film-card__summary';
     summary.textContent = movie.overview || 'No synopsis provided.';
-    card.appendChild(summary);
+    body.appendChild(summary);
 
     const ratingsRow = document.createElement('div');
     ratingsRow.className = 'film-card__ratings';
@@ -676,7 +679,8 @@ function createMovieCard(movie) {
     trailerLink.addEventListener('click', () => addRecentlyViewed(movie));
 
     actions.append(trailerLink);
-    card.appendChild(actions);
+    body.appendChild(actions);
+    card.appendChild(body);
 
     card.addEventListener('click', (event) => {
         if (event.target.closest('a') || event.target.closest('button')) {
