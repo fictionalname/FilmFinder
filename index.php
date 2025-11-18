@@ -185,7 +185,6 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             </div>
         </div>
         <header class="content__header">
-            <div class="status-pill" data-role="results-count">Loading films…</div>
             <div class="view-controls" data-role="layout-toggle">
                 <button class="ghost-button is-active" data-layout="grid">Grid</button>
                 <button class="ghost-button" data-layout="list">List</button>

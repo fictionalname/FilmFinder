@@ -58,6 +58,7 @@ final class FilmService
                 'summary' => $this->providerSummary($movies),
                 'selected' => $filters['providers'],
                 'available' => $this->providers,
+                'counts' => $this->providerCounts($filters),
             ],
             'filters' => [
                 'applied' => $filters,
@@ -349,11 +350,30 @@ final class FilmService
                 'summary' => $this->providerSummary([]),
                 'selected' => $filters['providers'],
                 'available' => $this->providers,
+                'counts' => array_fill_keys(array_keys($this->providers), 0),
             ],
             'filters' => [
                 'applied' => $filters,
             ],
         ];
+    }
+
+    private function providerCounts(array $filters): array
+    {
+        $cacheKey = 'provider_counts_' . md5(json_encode($filters));
+        $ttl = (int) Config::get('cache.ttl.discover', 1800);
+
+        return $this->cache->remember($cacheKey, $ttl, function () use ($filters) {
+            $counts = [];
+            foreach ($this->providers as $key => $provider) {
+                $settings = $filters;
+                $settings['providers'] = [$key];
+                $settings['page'] = 1;
+                $discover = $this->tmdb->discoverMovies($settings);
+                $counts[$key] = (int) ($discover['total_results'] ?? 0);
+            }
+            return $counts;
+        });
     }
 
     private function matchesProviderSelection(array $movie, array $selectedProviders): bool

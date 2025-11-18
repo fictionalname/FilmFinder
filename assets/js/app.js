@@ -41,6 +41,7 @@ const state = {
     infiniteObserver: null,
     recentlyViewed: [],
     providerSummary: {},
+    providerSummaryCounts: {},
 };
 
 const elements = {
@@ -48,7 +49,6 @@ const elements = {
     providerListMobile: document.querySelector('[data-role="provider-list-mobile"]'),
     genreListDesktop: document.querySelector('[data-role="genre-list"]'),
     genreListMobile: document.querySelector('[data-role="genre-list-mobile"]'),
-    resultsCount: document.querySelector('[data-role="results-count"]'),
     filtersOverlay: document.querySelector('[data-role="filters-overlay"]'),
     floatingButton: document.querySelector('[data-action="open-overlay"]'),
     floatingStatus: document.querySelector('[data-role="floating-status"]'),
@@ -486,9 +486,10 @@ function mirrorDesktopField(key, value) {
     }
 }
 
-function updateProviderSummary(summary = null) {
+function updateProviderSummary(summary = null, counts = null) {
     state.providerSummary = summary || {};
-    renderFloatingStatus(summary);
+    state.providerSummaryCounts = counts || {};
+    renderFloatingStatus(summary, counts);
 }
 
 function updateFloatingButtonVisibility(hidden) {
@@ -572,7 +573,9 @@ async function fetchMovies(page = 1) {
         state.movies = append ? state.movies.concat(movies) : movies;
         renderMovies(movies, { append });
         updateResultsCount();
-        updateProviderSummary(data.providers?.summary || null);
+        const summary = data.providers?.summary || null;
+        const counts = data.providers?.counts || null;
+        updateProviderSummary(summary, counts);
         toggleEmptyState();
         setupInfiniteScroll(state.pagination.page < state.pagination.totalPages);
 
@@ -836,16 +839,16 @@ function toggleEmptyState() {
     }
 }
 
-function renderFloatingStatus(summary = null) {
+function renderFloatingStatus(summary = null, counts = null) {
     if (!elements.floatingStatusSummary) return;
     const total = state.pagination.totalResults || 0;
     const providerCount = state.filters.providers.length;
     elements.floatingStatusSummary.textContent = `${providerCount} providers · ${total.toLocaleString()} films`;
     if (!elements.floatingStatusList) return;
-    const counts = summary || state.providerSummary || {};
+    const snapshots = counts || state.providerSummaryCounts || summary || state.providerSummary || {};
     elements.floatingStatusList.innerHTML = '';
     Object.entries(state.metadata.providers).forEach(([key, provider]) => {
-        const count = counts[key]?.count ?? 0;
+        const count = snapshots[key]?.count ?? snapshots[key] ?? 0;
         const item = document.createElement('li');
         item.innerHTML = `<span>${provider.label}</span><strong>${count.toLocaleString()}</strong>`;
         elements.floatingStatusList.appendChild(item);
