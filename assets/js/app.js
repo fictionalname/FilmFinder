@@ -41,7 +41,6 @@ const state = {
     infiniteObserver: null,
     recentlyViewed: [],
     providerSummary: {},
-    providerSummaryCounts: {},
 };
 
 const elements = {
@@ -486,10 +485,9 @@ function mirrorDesktopField(key, value) {
     }
 }
 
-function updateProviderSummary(summary = null, counts = null) {
+function updateProviderSummary(summary = null) {
     state.providerSummary = summary || {};
-    state.providerSummaryCounts = counts || {};
-    renderFloatingStatus(summary, counts);
+    renderFloatingStatus(summary);
 }
 
 function updateFloatingButtonVisibility(hidden) {
@@ -574,8 +572,7 @@ async function fetchMovies(page = 1) {
         renderMovies(movies, { append });
         updateResultsCount();
         const summary = data.providers?.summary || null;
-        const counts = data.providers?.counts || null;
-        updateProviderSummary(summary, counts);
+        updateProviderSummary(summary);
         toggleEmptyState();
         setupInfiniteScroll(state.pagination.page < state.pagination.totalPages);
 
@@ -839,13 +836,13 @@ function toggleEmptyState() {
     }
 }
 
-function renderFloatingStatus(summary = null, counts = null) {
+function renderFloatingStatus(summary = null) {
     if (!elements.floatingStatusSummary) return;
     const total = state.pagination.totalResults || 0;
     const providerCount = state.filters.providers.length;
     elements.floatingStatusSummary.textContent = `${providerCount} providers · ${total.toLocaleString()} films`;
     if (!elements.floatingStatusList) return;
-    const snapshots = counts || state.providerSummaryCounts || summary || state.providerSummary || {};
+    const snapshots = summary || state.providerSummary || {};
     elements.floatingStatusList.innerHTML = '';
     Object.entries(state.metadata.providers).forEach(([key, provider]) => {
         const count = snapshots[key]?.count ?? snapshots[key] ?? 0;
