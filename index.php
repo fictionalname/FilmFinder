@@ -73,7 +73,6 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
 
         <section class="filters-section">
             <h2>Providers</h2>
-            <p class="section-hint">Pick your services (AND logic, duplicates removed)</p>
             <div class="provider-select" data-role="provider-list">
                 <!-- Provider toggle buttons -->
             </div>
@@ -134,8 +133,7 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             <div class="filters-overlay__body" data-role="filters-overlay-body">
                 <section class="filters-section">
                     <h2>Providers</h2>
-                    <p class="section-hint">Pick your services (AND logic)</p>
-                    <div class="provider-select" data-role="provider-list-mobile"></div>
+                <div class="provider-select" data-role="provider-list-mobile"></div>
                 </section>
                 <section class="filters-section">
                     <h2>Release Window</h2>

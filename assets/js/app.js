@@ -70,7 +70,6 @@ const elements = {
 
 const scrollEffectsState = {
     enabled: Boolean(document.body?.dataset?.scrollEffects === 'enabled'),
-    observer: null,
     frame: null,
 };
 
@@ -103,6 +102,8 @@ async function init() {
         sanitizeFilters();
         renderProviders();
         renderGenres();
+        bindProviderEvents();
+        bindGenreEvents();
         renderYearOptions();
         bindFilterInputs();
         bindApplyButtons();
@@ -223,7 +224,6 @@ function renderProviders() {
         });
     });
 
-    bindProviderEvents();
 }
 
 function renderGenres() {
@@ -247,7 +247,6 @@ function renderGenres() {
         });
     });
 
-    bindGenreEvents();
 }
 
 function renderYearOptions() {
@@ -269,6 +268,34 @@ function renderYearOptions() {
     populate(desktopInputs.end_year, state.filters.end_year);
     populate(mobileInputs.start_year, state.filters.start_year);
     populate(mobileInputs.end_year, state.filters.end_year);
+    enforceYearBounds();
+}
+
+function enforceYearBounds() {
+    const startYear = Number(state.filters.start_year) || null;
+    const adjustSelect = (select) => {
+        if (!select) return;
+        Array.from(select.options).forEach((option) => {
+            if (!option.value) {
+                option.disabled = false;
+                return;
+            }
+            const yearValue = Number(option.value);
+            option.disabled = Boolean(startYear && yearValue < startYear);
+        });
+    };
+
+    adjustSelect(desktopInputs.end_year);
+    adjustSelect(mobileInputs.end_year);
+
+    if (startYear && state.filters.end_year) {
+        const endYear = Number(state.filters.end_year);
+        if (endYear < startYear) {
+            state.filters.end_year = state.filters.start_year;
+            mirrorDesktopField('end_year', state.filters.end_year);
+            mirrorMobileField('end_year', state.filters.end_year);
+        }
+    }
 }
 
 function bindProviderEvents() {
@@ -325,6 +352,9 @@ function bindFilterInputs() {
         const handler = () => {
             state.filters[key] = input.value;
             mirrorMobileField(key, input.value);
+            if (key === 'start_year') {
+                enforceYearBounds();
+            }
             scheduleFiltersUpdate();
         };
         input.addEventListener('input', handler);
@@ -336,6 +366,9 @@ function bindFilterInputs() {
         const handler = () => {
             state.filters[key] = input.value;
             mirrorDesktopField(key, input.value);
+            if (key === 'start_year') {
+                enforceYearBounds();
+            }
             scheduleFiltersUpdate();
         };
         input.addEventListener('input', handler);
@@ -418,6 +451,7 @@ function resetFilters() {
     renderProviders();
     renderGenres();
     syncInputMirrors();
+    enforceYearBounds();
     updateProviderSummary();
     updateUrlFromFilters();
 }
@@ -599,42 +633,15 @@ function renderMovies(movies, { append = false } = {}) {
     movies.forEach((movie) => {
         const card = createMovieCard(movie);
         fragment.appendChild(card);
-        observeFilmCard(card);
     });
     elements.filmGrid.appendChild(fragment);
 }
 
 function initScrollEffects() {
     if (!scrollEffectsState.enabled) return;
-    setupCardObserver();
     scheduleParallax();
     window.addEventListener('scroll', scheduleParallax, { passive: true });
     window.addEventListener('resize', scheduleParallax);
-}
-
-function setupCardObserver() {
-    if (typeof IntersectionObserver === 'undefined') return;
-    scrollEffectsState.observer = new IntersectionObserver(
-        (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    scrollEffectsState.observer?.unobserve(entry.target);
-                }
-            });
-        },
-        { threshold: 0.15 }
-    );
-}
-
-function observeFilmCard(card) {
-    if (!card) return;
-    if (!scrollEffectsState.enabled || !scrollEffectsState.observer) {
-        card.classList.add('is-visible');
-        return;
-    }
-    card.classList.remove('is-visible');
-    scrollEffectsState.observer.observe(card);
 }
 
 function scheduleParallax() {
@@ -650,10 +657,10 @@ function updateParallaxValues() {
     const doc = document.documentElement;
     const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1);
     const progress = Math.min(window.scrollY / maxScroll, 1);
-    const x1 = progress * 40 - 20;
-    const y1 = progress * 24 - 12;
-    const x2 = progress * -30 + 15;
-    const y2 = progress * -18 + 9;
+    const x1 = progress * 80 - 40;
+    const y1 = progress * 40 - 20;
+    const x2 = progress * -60 + 30;
+    const y2 = progress * -30 + 15;
     doc.style.setProperty('--parallax-offset-x-1', `${x1}px`);
     doc.style.setProperty('--parallax-offset-y-1', `${y1}px`);
     doc.style.setProperty('--parallax-offset-x-2', `${x2}px`);

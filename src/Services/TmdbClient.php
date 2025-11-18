@@ -110,7 +110,7 @@ final class TmdbClient
         }
 
         if (!empty($filters['genres']) && is_array($filters['genres'])) {
-            $params['with_genres'] = implode(',', array_map('trim', $filters['genres']));
+            $params['with_genres'] = implode('|', array_map('trim', $filters['genres']));
         }
 
         if (!empty($filters['vote_count_gte'])) {
