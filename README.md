@@ -6,7 +6,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Requirements + visual direction captured; typography locked to Space Grotesk (headings) and Sora (body) for consistent futuristic styling.
 - Backend foundations complete: bootstrap/config, filesystem cache store, TMDB client wrapper, FilmService (normalisation, runtime/certification/cast enrichment, provider summaries, genre-aware highlights), and a single API entry (`api.php`) exposing discover/metadata/highlights endpoints.
 - Frontend experience live: PHP-driven `index.php` with forced refresh/version tokens, compact glass layout, rectangular chips/buttons, year-only release filters, floating Filters FAB/overlay, provider summary chips that double as toggles, highlight row (desktop/tablet only), and grid/list view controls (hidden on mobile).
-- A floating glass “status pill” hovers over the content on all breakpoints, summarises provider totals, and expands to reveal each provider’s film count without taking sidebar space.
+- A floating glass “status pill” hovers over the content on all breakpoints, summarises provider totals, and expands to reveal the accurate film counts per provider (cached on the backend for efficiency) without taking sidebar space.
 - Release window filtering only exposes years and now keeps the end year equal to or newer than the start year automatically.
 - Genre filters now behave as OR selections so choosing multiple genres surfaces titles matching any of the chosen categories.
 - Optional scroll effect: parallax gradients are enabled by default via `data-scroll-effects="enabled"` on `<body>`, producing stronger motion as you scroll; toggle it off by removing or altering the attribute if you prefer a still canvas.

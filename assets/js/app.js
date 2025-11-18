@@ -41,6 +41,7 @@ const state = {
     infiniteObserver: null,
     recentlyViewed: [],
     providerSummary: {},
+    providerSummaryCounts: {},
 };
 
 const elements = {
@@ -484,9 +485,14 @@ function mirrorDesktopField(key, value) {
     }
 }
 
-function updateProviderSummary(summary = null) {
-    state.providerSummary = summary || {};
-    renderFloatingStatus(summary);
+function updateProviderSummary(summary = null, counts = null) {
+    if (summary) {
+        state.providerSummary = summary;
+    }
+    if (counts) {
+        state.providerSummaryCounts = counts;
+    }
+    renderFloatingStatus();
 }
 
 function updateFloatingButtonVisibility(hidden) {
@@ -571,7 +577,8 @@ async function fetchMovies(page = 1) {
         renderMovies(movies, { append });
         updateResultsCount();
         const summary = data.providers?.summary || null;
-        updateProviderSummary(summary);
+        const counts = data.providers?.counts || null;
+        updateProviderSummary(summary, counts);
         toggleEmptyState();
         setupInfiniteScroll(state.pagination.page < state.pagination.totalPages);
 
@@ -839,13 +846,16 @@ function renderFloatingStatus(summary = null) {
     elements.floatingStatusSummary.textContent = `${providerCount} providers · ${total.toLocaleString()} films`;
     if (!elements.floatingStatusList) return;
     const activeProviders = state.filters.providers;
+    const counts = state.providerSummaryCounts || {};
     elements.floatingStatusList.innerHTML = '';
     Object.entries(state.metadata.providers).forEach(([key, provider]) => {
         const item = document.createElement('li');
         const isActive = activeProviders.includes(key);
+        const count = counts[key] ?? 0;
         item.innerHTML = `
             <span>${provider.label}</span>
             <span class="provider-status${isActive ? ' is-active' : ''}" aria-label="${provider.label} ${isActive ? 'selected' : 'not selected'}"></span>
+            <strong>${count.toLocaleString()}</strong>
         `;
         elements.floatingStatusList.appendChild(item);
     });
