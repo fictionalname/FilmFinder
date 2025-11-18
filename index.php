@@ -149,29 +149,32 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
                     </div>
                 </section>
                 <section class="filters-section">
-                    <h2>Search & Sort</h2>
-                    <label class="field">
-                        <span>Title / keyword</span>
-                        <input type="search" placeholder="Search films..." data-filter-mobile="query">
-                    </label>
-                <label class="field">
-                    <span>Sort order</span>
-                    <select data-filter-mobile="sort">
-                        <option value="primary_release_date.desc">Newest</option>
-                        <option value="primary_release_date.asc">Oldest</option>
-                        <option value="popularity.desc">Popularity ↓</option>
-                        <option value="popularity.asc">Popularity ↑</option>
-                        <option value="vote_average.desc">Best Rated</option>
-                        <option value="vote_count.desc">Most Rated</option>
-                    </select>
-                </label>
-                </section>
-                <section class="filters-section">
                     <h2>Genres</h2>
                     <div class="genre-list" data-role="genre-list-mobile"></div>
                 </section>
+                <section class="filters-section filters-section--bottom">
+                    <details class="filters-collapse" open>
+                        <summary>Search & Sort</summary>
+                        <label class="field">
+                            <span>Title / keyword</span>
+                            <input type="search" placeholder="Search films..." data-filter-mobile="query">
+                        </label>
+                        <label class="field">
+                            <span>Sort order</span>
+                            <select data-filter-mobile="sort">
+                                <option value="primary_release_date.desc">Newest</option>
+                                <option value="primary_release_date.asc">Oldest</option>
+                                <option value="popularity.desc">Popularity ↓</option>
+                                <option value="popularity.asc">Popularity ↑</option>
+                                <option value="vote_average.desc">Best Rated</option>
+                                <option value="vote_count.desc">Most Rated</option>
+                            </select>
+                        </label>
+                    </details>
+                </section>
             </div>
-            <footer>
+            <footer class="filters-footer">
+                <button class="ghost-button" data-action="reset-filters">Reset</button>
                 <button class="primary-button" data-action="apply-overlay">See Films</button>
             </footer>
         </div>

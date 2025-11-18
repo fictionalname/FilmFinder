@@ -547,9 +547,58 @@ select option {
     width: 100%;
     background: var(--ff-color-panel);
     border-radius: 0;
-    padding: var(--ff-spacing-md);
+    padding: var(--ff-spacing-sm) var(--ff-spacing-md);
     max-height: 100vh;
     overflow-y: auto;
+    gap: var(--ff-spacing-xs);
+}
+
+.filters-overlay__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ff-spacing-md);
+}
+
+.filters-section {
+    margin-top: 0;
+    padding-top: 0;
+    border: none;
+}
+
+.filters-section h2 {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.filters-section--bottom {
+    margin-top: auto;
+}
+
+.filters-collapse summary {
+    font-weight: 600;
+    cursor: pointer;
+    padding-bottom: var(--ff-spacing-xs);
+}
+
+.filters-collapse[open] summary {
+    margin-bottom: var(--ff-spacing-xs);
+}
+
+.filters-collapse + .field,
+.filters-collapse .field {
+    margin-bottom: var(--ff-spacing-xs);
+}
+
+.filters-footer {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: var(--ff-spacing-sm);
+}
+
+.filters-footer button {
+    width: 100%;
+    text-align: center;
 }
 
 .floating-filter-btn {
