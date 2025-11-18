@@ -299,6 +299,13 @@ select option {
     padding: var(--ff-spacing-md);
 }
 
+.film-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    flex: 1;
+}
+
 .film-grid[data-layout="list"] .film-card {
     flex-direction: row;
 }
@@ -571,6 +578,22 @@ select option {
     }
     .film-grid {
         gap: var(--ff-spacing-sm);
+        grid-template-columns: 1fr;
+    }
+    .film-card {
+        flex-direction: row;
+    }
+    .film-card__poster {
+        width: 25%;
+        max-width: 120px;
+    }
+    .film-card__body {
+        padding-left: var(--ff-spacing-sm);
+    }
+    .film-card__summary {
+        width: 100%;
+        order: 2;
+        margin-top: 0.4rem;
     }
 }
 

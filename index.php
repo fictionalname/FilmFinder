@@ -130,7 +130,6 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
         <div class="filters-overlay__sheet">
             <header>
                 <h2>Filters</h2>
-                <button class="ghost-button" data-action="close-overlay">Close</button>
             </header>
             <div class="filters-overlay__body" data-role="filters-overlay-body">
                 <section class="filters-section">
