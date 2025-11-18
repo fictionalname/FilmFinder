@@ -525,6 +525,12 @@ select option {
     z-index: 60;
 }
 
+.floating-filter-btn.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .noscript {
     background: #c0392b;
     padding: 0.5rem;

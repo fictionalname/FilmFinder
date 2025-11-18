@@ -470,10 +470,17 @@ function updateProviderSummary(summary = null) {
     });
 }
 
+function updateFloatingButtonVisibility(hidden) {
+    if (!elements.floatingButton) return;
+    elements.floatingButton.classList.toggle('is-hidden', hidden);
+    elements.floatingButton.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+}
+
 function openOverlay(visible) {
     if (!elements.filtersOverlay) return;
     elements.filtersOverlay.setAttribute('aria-hidden', visible ? 'false' : 'true');
     document.body.classList.toggle('overlay-open', visible);
+    updateFloatingButtonVisibility(visible);
 }
 
 function handleResizeForOverlay() {
