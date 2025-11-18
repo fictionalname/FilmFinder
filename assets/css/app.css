@@ -553,6 +553,9 @@ select option {
     .recently-viewed {
         display: none;
     }
+    .floating-filter-btn {
+        display: inline-flex;
+    }
 }
 
 @media (max-width: 768px) {
