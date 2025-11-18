@@ -30,7 +30,7 @@ return [
             'color' => '#e50914',
         ],
         'amazon' => [
-            'id' => 119,
+            'id' => 10,
             'label' => 'Amazon',
             'color' => '#00a8e1',
         ],
