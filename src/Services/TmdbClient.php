@@ -109,6 +109,10 @@ final class TmdbClient
             $params['vote_count.gte'] = (int) $filters['vote_count_gte'];
         }
 
+        if (!empty($filters['query'])) {
+            $params['with_text_query'] = trim((string) $filters['query']);
+        }
+
         return $params;
     }
 

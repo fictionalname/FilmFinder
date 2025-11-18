@@ -1,7 +1,11 @@
 const API_ENDPOINT = 'api.php';
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 const RECENT_KEY = 'filmFinderRecentlyViewed';
+const FILTER_STORAGE_KEY = 'filmFinderFilters';
+const LAYOUT_STORAGE_KEY = 'filmFinderLayout';
 const DEBOUNCE_DELAY = 350;
+let urlFiltersProvided = false;
+let persistedFiltersLoaded = false;
 
 const YEARS = (() => {
     const start = 1980;
@@ -99,6 +103,7 @@ async function init() {
         bindOverlayControls();
         bindRecentControls();
         bindLayoutToggle();
+        loadPersistedLayout();
         syncInputMirrors();
         updateProviderSummary();
         await applyFilters({ resetPage: true });
@@ -121,20 +126,45 @@ function parseFiltersFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const providers = params.get('providers');
     const genres = params.get('genres');
+    urlFiltersProvided = urlFiltersProvided || Array.from(params.keys()).length > 0;
     state.filters.providers = providers ? providers.split(',').filter(Boolean) : state.filters.providers;
     state.filters.genres = genres ? genres.split(',').filter(Boolean) : state.filters.genres;
     state.filters.start_year = params.get('start_year') || state.filters.start_year;
     state.filters.end_year = params.get('end_year') || state.filters.end_year;
     state.filters.sort = params.get('sort') || state.filters.sort;
     state.filters.query = params.get('query') || state.filters.query;
+
+    if (!urlFiltersProvided) {
+        loadPersistedFilters();
+    }
+}
+
+function loadPersistedFilters() {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+        const raw = localStorage.getItem(FILTER_STORAGE_KEY);
+        if (!raw) return;
+        const saved = JSON.parse(raw);
+        if (typeof saved !== 'object' || saved === null) return;
+        state.filters = {
+            ...state.filters,
+            ...saved,
+            providers: Array.isArray(saved.providers) ? saved.providers : state.filters.providers,
+            genres: Array.isArray(saved.genres) ? saved.genres : state.filters.genres,
+        };
+        persistedFiltersLoaded = true;
+    } catch {
+        // ignore persistence errors
+    }
 }
 
 function sanitizeFilters() {
     const providerKeys = Object.keys(state.metadata.providers);
     if (providerKeys.length) {
         state.filters.providers = state.filters.providers.filter((key) => providerKeys.includes(key));
-        if (!state.filters.providers.length) {
+        if (!state.filters.providers.length && !persistedFiltersLoaded && !urlFiltersProvided) {
             state.filters.providers = providerKeys;
+            persistedFiltersLoaded = true;
         }
     }
 
@@ -150,8 +180,9 @@ async function loadMetadata() {
     const data = await fetchJSON('metadata');
     state.metadata.providers = data.providers || {};
     state.metadata.genres = data.genres || [];
-    if (!state.filters.providers.length) {
+    if (!state.filters.providers.length && !persistedFiltersLoaded && !urlFiltersProvided) {
         state.filters.providers = Object.keys(state.metadata.providers);
+        persistedFiltersLoaded = true;
     }
 }
 
@@ -337,6 +368,7 @@ function bindLayoutToggle() {
             btn.classList.toggle('is-active', btn === target);
         });
         elements.filmGrid.dataset.layout = layout;
+        persistLayout(layout);
     });
 }
 
@@ -443,6 +475,7 @@ async function applyFilters({ resetPage = false, skipUrlUpdate = false } = {}) {
     if (!skipUrlUpdate) {
         updateUrlFromFilters();
     }
+    persistFilters();
     await fetchMovies(state.pagination.page);
 }
 
@@ -553,6 +586,11 @@ function createMovieCard(movie) {
     } else {
         poster.textContent = getInitials(movie.title);
     }
+    const certificationOverlay = buildCertificationIcon(movie.certification);
+    if (certificationOverlay) {
+        certificationOverlay.classList.add('bbfc-icon--poster');
+        poster.appendChild(certificationOverlay);
+    }
     card.appendChild(poster);
 
     if (movie.release_year) {
@@ -576,14 +614,7 @@ function createMovieCard(movie) {
     const metaBits = [];
     if (movie.runtime) metaBits.push(`${movie.runtime} min`);
     if (movie.cast?.length) metaBits.push(`Cast: ${movie.cast.join(', ')}`);
-    const metaText = metaBits.join(' • ');
-    if (metaText) {
-        meta.append(metaText);
-    }
-    const certificationIcon = buildCertificationIcon(movie.certification);
-    if (certificationIcon) {
-        meta.appendChild(certificationIcon);
-    }
+    meta.textContent = metaBits.join(' • ') || 'Details updating…';
     card.appendChild(meta);
 
     const summary = document.createElement('p');
@@ -617,14 +648,6 @@ function createMovieCard(movie) {
 
     const actions = document.createElement('div');
     actions.className = 'film-card__actions';
-    const tmdbLink = document.createElement('a');
-    tmdbLink.className = 'ghost-button film-card__action';
-    tmdbLink.href = movie.tmdb_url;
-    tmdbLink.target = '_blank';
-    tmdbLink.rel = 'noopener noreferrer';
-    tmdbLink.textContent = 'View on TMDB';
-    tmdbLink.addEventListener('click', () => addRecentlyViewed(movie));
-
     const trailerLink = document.createElement('a');
     trailerLink.className = 'primary-button film-card__action';
     trailerLink.href = movie.trailer_url;
@@ -633,7 +656,7 @@ function createMovieCard(movie) {
     trailerLink.textContent = 'Watch Trailer';
     trailerLink.addEventListener('click', () => addRecentlyViewed(movie));
 
-    actions.append(tmdbLink, trailerLink);
+    actions.append(trailerLink);
     card.appendChild(actions);
 
     card.addEventListener('click', (event) => {
@@ -781,6 +804,40 @@ function renderHighlights() {
         fragment.appendChild(card);
     });
     elements.highlightCards.appendChild(fragment);
+}
+
+function persistFilters() {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+        localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify(state.filters));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+function loadPersistedLayout() {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+        const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
+        if (!saved || !elements.filmGrid) return;
+        elements.filmGrid.dataset.layout = saved;
+        if (elements.layoutToggle) {
+            elements.layoutToggle.querySelectorAll('[data-layout]').forEach((btn) => {
+                btn.classList.toggle('is-active', btn.dataset.layout === saved);
+            });
+        }
+    } catch {
+        // ignore
+    }
+}
+
+function persistLayout(layout) {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    try {
+        localStorage.setItem(LAYOUT_STORAGE_KEY, layout);
+    } catch {
+        // ignore storage errors
+    }
 }
 
 function loadRecentlyViewed() {

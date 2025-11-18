@@ -307,6 +307,7 @@ select option {
 }
 
 .film-card__poster {
+    position: relative;
     border-radius: 12px;
     overflow: hidden;
     aspect-ratio: 2 / 3;
@@ -554,6 +555,20 @@ select option {
     }
 }
 
+@media (max-width: 768px) {
+    .film-grid,
+    .load-state,
+    .empty-state {
+        border: none;
+        background: transparent;
+        padding: var(--ff-spacing-md) 0;
+        box-shadow: none;
+    }
+    .film-grid {
+        gap: var(--ff-spacing-sm);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.001ms !important;
@@ -561,4 +576,9 @@ select option {
         transition-duration: 0.001ms !important;
         scroll-behavior: auto !important;
     }
+}
+.bbfc-icon--poster {
+    position: absolute;
+    right: 0.4rem;
+    bottom: 0.4rem;
 }

@@ -33,6 +33,9 @@ final class FilmService
     public function listMovies(array $inputFilters): array
     {
         $filters = $this->normalizeFilters($inputFilters);
+        if (count($filters['providers']) === 0) {
+            return $this->emptyListResponse($filters);
+        }
         $discover = $this->tmdb->discoverMovies($filters);
         $results = $discover['results'] ?? [];
         $movies = [];
@@ -62,6 +65,12 @@ final class FilmService
     public function highlight(array $inputFilters): array
     {
         $filters = $this->normalizeFilters($inputFilters);
+        if (count($filters['providers']) === 0) {
+            return [
+                'results' => [],
+                'filters' => $filters,
+            ];
+        }
         $filters['sort'] = 'vote_average.desc';
         $filters['vote_count_gte'] = 300;
 
@@ -94,13 +103,18 @@ final class FilmService
     private function normalizeFilters(array $filters): array
     {
         $availableProviders = array_keys($this->providers);
-        $selectedProviders = $filters['providers'] ?? $availableProviders;
-        if (is_string($selectedProviders)) {
-            $selectedProviders = explode(',', $selectedProviders);
-        }
-        $selectedProviders = array_values(array_intersect($availableProviders, $selectedProviders));
-        if (empty($selectedProviders)) {
+        $selectedProviders = [];
+        if (!array_key_exists('providers', $filters)) {
             $selectedProviders = $availableProviders;
+        } else {
+            $providersParam = $filters['providers'];
+            if (is_string($providersParam)) {
+                $providersParam = array_filter(array_map('trim', explode(',', $providersParam)));
+            }
+            if (!is_array($providersParam)) {
+                $providersParam = [];
+            }
+            $selectedProviders = array_values(array_intersect($availableProviders, $providersParam));
         }
 
         $genres = $filters['genres'] ?? [];
@@ -313,5 +327,25 @@ final class FilmService
         }
 
         return $summary;
+    }
+
+    private function emptyListResponse(array $filters): array
+    {
+        return [
+            'results' => [],
+            'pagination' => [
+                'page' => 1,
+                'total_pages' => 1,
+                'total_results' => 0,
+            ],
+            'providers' => [
+                'summary' => $this->providerSummary([]),
+                'selected' => $filters['providers'],
+                'available' => $this->providers,
+            ],
+            'filters' => [
+                'applied' => $filters,
+            ],
+        ];
     }
 }

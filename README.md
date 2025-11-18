@@ -6,8 +6,8 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Requirements + visual direction captured; typography locked to Space Grotesk (headings) and Sora (body) for consistent futuristic styling.
 - Backend foundations complete: bootstrap/config, filesystem cache store, TMDB client wrapper, FilmService (normalisation, runtime/certification/cast enrichment, provider summaries, genre-aware highlights), and a single API entry (`api.php`) exposing discover/metadata/highlights endpoints.
 - Frontend experience live: PHP-driven `index.php` with forced refresh/version tokens, compact glass layout, rectangular chips/buttons, year-only release filters, floating Filters FAB/overlay, provider summary chips that double as toggles, highlight row (desktop/tablet only), and grid/list view controls.
-- Client logic implemented (`assets/js/app.js`): metadata loading, filter mirroring across desktop/mobile, multi-genre selection, provider counters synced with filter state, query-string state sync, debounced backend calls, sentinel-driven infinite scroll, genre-aware highlights, provider count updates, empty/loading states, and localStorage-powered recently viewed chips (hidden on small screens).
-- Film cards show runtime, BBFC icons, cast, provider badges, trailer + TMDB links, and IMDb / Rotten Tomatoes badges derived heuristically from TMDB scores (permitted data source).
+- Client logic implemented (`assets/js/app.js`): metadata loading, filter mirroring across desktop/mobile, multi-genre/provider selection with persistent state, provider counters synced with filter state, query-string + localStorage sync, debounced backend calls, sentinel-driven infinite scroll, genre-aware highlights, provider count updates, empty/loading states, and locally stored recently viewed chips (hidden on small screens).
+- Film cards show runtime, BBFC icons pinned over the poster, cast, provider badges, trailer links, and IMDb / Rotten Tomatoes badges derived heuristically from TMDB scores (permitted data source).
 
 ## Core Objectives
 - Aggregate films currently on Netflix, Amazon, Disney, and Apple (UK region) on demand using TMDB discover endpoints with caching (30–60 min TTL) and no bulk provider scrape.
@@ -22,6 +22,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Recently viewed ribbon is desktop/tablet only to preserve mobile real estate, per requirement.
 - Cache layer auto-disables itself if the hosting environment blocks writes to `storage/cache`, so PHP warnings won’t corrupt API JSON responses.
 - TMDB client gracefully falls back to PHP streams whenever cURL isn’t available, keeping API responses reliable on constrained hosts.
+- Filter and layout selections persist across sessions via `localStorage`, so providers/genres/sort/view preferences remain intact even after the browser closes.
 
 ## Deployment Guide
 1. Copy `.env.deploy.example` to `.env.deploy` (kept out of git) and fill in your Jolt FTP/SFTP credentials:
