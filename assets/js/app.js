@@ -838,12 +838,15 @@ function renderFloatingStatus(summary = null) {
     const providerCount = state.filters.providers.length;
     elements.floatingStatusSummary.textContent = `${providerCount} providers · ${total.toLocaleString()} films`;
     if (!elements.floatingStatusList) return;
-    const snapshots = summary || state.providerSummary || {};
+    const activeProviders = state.filters.providers;
     elements.floatingStatusList.innerHTML = '';
     Object.entries(state.metadata.providers).forEach(([key, provider]) => {
-        const count = snapshots[key]?.count ?? snapshots[key] ?? 0;
         const item = document.createElement('li');
-        item.innerHTML = `<span>${provider.label}</span><strong>${count.toLocaleString()}</strong>`;
+        const isActive = activeProviders.includes(key);
+        item.innerHTML = `
+            <span>${provider.label}</span>
+            <span class="provider-status${isActive ? ' is-active' : ''}" aria-label="${provider.label} ${isActive ? 'selected' : 'not selected'}"></span>
+        `;
         elements.floatingStatusList.appendChild(item);
     });
 }

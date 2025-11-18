@@ -678,6 +678,20 @@ select option {
     border-bottom: none;
 }
 
+.provider-status {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    background: transparent;
+    display: inline-flex;
+}
+
+.provider-status.is-active {
+    background: rgba(110, 139, 255, 0.9);
+    border-color: rgba(110, 139, 255, 0.9);
+}
+
 .floating-filter-btn {
     position: fixed;
     bottom: 1.4rem;
