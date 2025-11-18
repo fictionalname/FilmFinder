@@ -641,18 +641,18 @@ function createMovieCard(movie) {
         info.appendChild(runtimeLine);
     }
 
+    if (movie.cast?.length) {
+        const castLine = document.createElement('p');
+        castLine.className = 'film-card__cast';
+        castLine.textContent = `Cast: ${movie.cast.join(', ')}`;
+        info.appendChild(castLine);
+    }
+
     header.appendChild(info);
     card.appendChild(header);
 
     const details = document.createElement('div');
     details.className = 'film-card__details';
-
-    if (movie.cast?.length) {
-        const castLine = document.createElement('p');
-        castLine.className = 'film-card__cast';
-        castLine.textContent = `Cast: ${movie.cast.join(', ')}`;
-        details.appendChild(castLine);
-    }
 
     const summary = document.createElement('p');
     summary.className = 'film-card__summary';
