@@ -40,6 +40,7 @@ const state = {
     loading: false,
     infiniteObserver: null,
     recentlyViewed: [],
+    providerSummary: {},
 };
 
 const elements = {
@@ -47,10 +48,12 @@ const elements = {
     providerListMobile: document.querySelector('[data-role="provider-list-mobile"]'),
     genreListDesktop: document.querySelector('[data-role="genre-list"]'),
     genreListMobile: document.querySelector('[data-role="genre-list-mobile"]'),
-    providerSummaryLine: document.querySelector('[data-role="provider-summary-line"]'),
     resultsCount: document.querySelector('[data-role="results-count"]'),
     filtersOverlay: document.querySelector('[data-role="filters-overlay"]'),
     floatingButton: document.querySelector('[data-action="open-overlay"]'),
+    floatingStatus: document.querySelector('[data-role="floating-status"]'),
+    floatingStatusSummary: document.querySelector('[data-role="floating-status-summary"]'),
+    floatingStatusList: document.querySelector('[data-role="floating-status-list"]'),
     closeOverlayButton: document.querySelector('[data-action="close-overlay"]'),
     applyOverlayButton: document.querySelector('[data-action="apply-overlay"]'),
     applyFilterButtons: document.querySelectorAll('[data-action="apply-filters"]'),
@@ -90,6 +93,7 @@ const mobileInputs = {
 const scheduleFiltersUpdate = debounce(() => applyFilters({ resetPage: true }), DEBOUNCE_DELAY);
 
 init();
+let floatingStatusOutsideHandler = null;
 
 async function init() {
     parseFiltersFromUrl();
@@ -113,6 +117,7 @@ async function init() {
         loadPersistedLayout();
         syncInputMirrors();
         initScrollEffects();
+        initFloatingStatus();
         updateProviderSummary();
         await applyFilters({ resetPage: true });
     } catch (error) {
@@ -482,33 +487,8 @@ function mirrorDesktopField(key, value) {
 }
 
 function updateProviderSummary(summary = null) {
-    const line = elements.providerSummaryLine;
-    if (!line) return;
-    line.innerHTML = '';
-    Object.entries(state.metadata.providers).forEach(([key, provider]) => {
-        const badge = document.createElement('button');
-        badge.type = 'button';
-        badge.className = 'summary-badge';
-        const active = state.filters.providers.includes(key);
-        const count = summary && summary[key] ? summary[key].count : '—';
-        badge.style.borderColor = active ? provider.color : 'var(--ff-color-outline)';
-        badge.dataset.provider = key;
-        badge.dataset.active = active.toString();
-        badge.setAttribute('aria-pressed', active ? 'true' : 'false');
-        badge.innerHTML = `
-            <span class="badge-dot" style="background:${provider.color};"></span>
-            ${provider.label} · <strong>${count}</strong>
-        `;
-        line.appendChild(badge);
-    });
-
-    line.querySelectorAll('button[data-provider]').forEach((btn) => {
-        btn.addEventListener('click', () => {
-            const key = btn.dataset.provider;
-            toggleProvider(key);
-            scheduleFiltersUpdate();
-        });
-    });
+    state.providerSummary = summary || {};
+    renderFloatingStatus(summary);
 }
 
 function updateFloatingButtonVisibility(hidden) {
@@ -835,6 +815,7 @@ function updateResultsCount() {
     if (!elements.resultsCount) return;
     const { totalResults, page, totalPages } = state.pagination;
     elements.resultsCount.textContent = `${totalResults.toLocaleString()} films · Page ${page} of ${Math.max(totalPages, 1)}`;
+    renderFloatingStatus();
 }
 
 function toggleEmptyState() {
@@ -853,6 +834,48 @@ function toggleEmptyState() {
             body.textContent = 'Try adjusting providers, genres, search, or years to widen the search.';
         }
     }
+}
+
+function renderFloatingStatus(summary = null) {
+    if (!elements.floatingStatusSummary) return;
+    const total = state.pagination.totalResults || 0;
+    const providerCount = state.filters.providers.length;
+    elements.floatingStatusSummary.textContent = `${providerCount} providers · ${total.toLocaleString()} films`;
+    if (!elements.floatingStatusList) return;
+    const counts = summary || state.providerSummary || {};
+    elements.floatingStatusList.innerHTML = '';
+    Object.entries(state.metadata.providers).forEach(([key, provider]) => {
+        const count = counts[key]?.count ?? 0;
+        const item = document.createElement('li');
+        item.innerHTML = `<span>${provider.label}</span><strong>${count.toLocaleString()}</strong>`;
+        elements.floatingStatusList.appendChild(item);
+    });
+}
+
+function initFloatingStatus() {
+    if (!elements.floatingStatus) return;
+    const toggle = elements.floatingStatus.querySelector('[data-action="toggle-status"]');
+    if (!toggle) return;
+    toggle.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        const nextOpen = !expanded;
+        elements.floatingStatus.classList.toggle('is-open', nextOpen);
+        toggle.setAttribute('aria-expanded', nextOpen.toString());
+        renderFloatingStatus();
+    });
+    floatingStatusOutsideHandler = (event) => {
+        if (!elements.floatingStatus.contains(event.target)) {
+            closeFloatingStatus(toggle);
+        }
+    };
+    document.addEventListener('click', floatingStatusOutsideHandler);
+}
+
+function closeFloatingStatus(toggle) {
+    if (!elements.floatingStatus || !elements.floatingStatus.classList.contains('is-open')) return;
+    elements.floatingStatus.classList.remove('is-open');
+    toggle?.setAttribute('aria-expanded', 'false');
 }
 
 function setLoadingIndicator(visible, message = 'Fetching cinematic gems…') {

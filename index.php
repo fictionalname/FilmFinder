@@ -63,13 +63,7 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
                 <p class="eyebrow">Streaming Availability</p>
                 <h1><?= htmlspecialchars($appName) ?></h1>
             </div>
-            <div class="provider-summary" data-role="provider-summary">
-                <span class="summary-label">Live counts refresh as you filter</span>
-                <div class="summary-line" data-role="provider-summary-line">
-                    <!-- Provider summary badges injected via JS -->
-                </div>
-            </div>
-        </div>
+    </div>
 
         <section class="filters-section">
             <h2>Providers</h2>
@@ -181,6 +175,15 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
     </div>
 
     <main class="content">
+        <div class="floating-status" data-role="floating-status">
+            <button class="floating-status__pill" type="button" data-action="toggle-status" aria-expanded="false">
+                <span data-role="floating-status-summary">0 providers · 0 films</span>
+                <span class="floating-status__chevron" aria-hidden="true"></span>
+            </button>
+            <div class="floating-status__details" data-role="floating-status-details">
+                <ul data-role="floating-status-list"></ul>
+            </div>
+        </div>
         <header class="content__header">
             <div class="status-pill" data-role="results-count">Loading films…</div>
             <div class="view-controls" data-role="layout-toggle">
