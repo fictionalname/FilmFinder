@@ -302,7 +302,7 @@ select option {
 .film-card__header {
     display: flex;
     gap: var(--ff-spacing-sm);
-    align-items: flex-start;
+    align-items: center;
 }
 
 .film-card__poster {
