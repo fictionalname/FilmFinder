@@ -39,7 +39,7 @@
 - Overhauled the UI per design feedback: smaller spacing, rectangular chips, live provider counters that also deselect services, multi-genre selection, year-only release filters, grid/list toggle, BBFC icons, mobile-only highlight hiding, visible mobile filter FAB, compact TMDB/trailer buttons, and optimized infinite scrolling with a sentinel element.
 - Hidden the top header/status block on small screens so mobile users only see films and the floating Filter button.
 - Ensured the floating Filters FAB hides itself while the overlay is open so the film view stays uncluttered and reappears as soon as the sheet is dismissed.
-- Added optional parallax background drift via `<body data-scroll-effects="enabled">`, keeping touch and desktop browsers performant while allowing the motion to be disabled instantly.
+- Removed the `with_origin_country` restriction so the discover results include every UK-streamed film regardless of where it was produced.
 - Release window now prevents the “To” year from being earlier than the “From” year so filtering stays consistent no matter how the range shifts.
 - Mobile search/sort section starts collapsed to keep the overlay compact until the user explicitly expands it.
 - Added a floating glass “status pill” that hovers over the content and displays just the provider/film totals while keeping the sidebar lean.

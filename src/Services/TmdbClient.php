@@ -101,7 +101,6 @@ final class TmdbClient
             'with_watch_monetization_types' => 'flatrate',
             'sort_by' => $filters['sort'] ?? 'popularity.desc',
             'page' => (int) ($filters['page'] ?? 1),
-            'with_origin_country' => 'US|GB',
         ]);
 
         if (!empty($filters['start_date']) || !empty($filters['end_date'])) {
