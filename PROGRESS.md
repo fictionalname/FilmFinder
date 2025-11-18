@@ -34,5 +34,7 @@
 - Implemented full client logic (`assets/js/app.js`): metadata loading, filter mirroring, URL sync, debounced API calls, IntersectionObserver infinite scroll, highlight cards, provider summary counts, desktop-only recently viewed chips, and graceful empty/loading states.
 - Added FTPS-ready deployment helper (`scripts/deploy.php` + `.env.deploy.example`) and published instructions in README.
 - Added verbose PowerShell deployment helper (`scripts/deploy.ps1`) that mirrors the `.env.deploy` settings and reports every directory/file transfer.
-- Hardened CacheStore so it silently disables itself when the host can’t create/write the cache directory (prevents PHP warnings from breaking JSON responses on constrained shared hosting).
+- Hardened CacheStore so it silently disables itself when the host can't create/write the cache directory (prevents PHP warnings from breaking JSON responses on constrained shared hosting).
+- Added HTTP stream fallback to the TMDB client so metadata/film responses succeed even when cURL isn't available on shared hosting.
+- Overhauled the UI per design feedback: smaller spacing, rectangular chips, live provider counters that also deselect services, multi-genre selection, year-only release filters, grid/list toggle, BBFC icons, mobile-only highlight hiding, visible mobile filter FAB, compact TMDB/trailer buttons, and optimized infinite scrolling with a sentinel element.
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
