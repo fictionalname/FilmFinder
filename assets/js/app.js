@@ -594,6 +594,9 @@ function createMovieCard(movie) {
     card.dataset.movieId = movie.id;
     card.setAttribute('tabindex', '0');
 
+    const header = document.createElement('div');
+    header.className = 'film-card__header';
+
     const poster = document.createElement('div');
     poster.className = 'film-card__poster';
     if (movie.poster_path) {
@@ -610,43 +613,58 @@ function createMovieCard(movie) {
         certificationOverlay.classList.add('bbfc-icon--poster');
         poster.appendChild(certificationOverlay);
     }
-    card.appendChild(poster);
+    header.appendChild(poster);
+
+    const info = document.createElement('div');
+    info.className = 'film-card__info';
 
     if (movie.release_year) {
         const year = document.createElement('span');
         year.className = 'year-pill';
         year.textContent = movie.release_year;
-        card.appendChild(year);
+        info.appendChild(year);
     }
 
     const title = document.createElement('h3');
     title.textContent = movie.title;
-    card.appendChild(title);
+    info.appendChild(title);
 
     const genreLine = document.createElement('p');
     genreLine.className = 'film-card__genres';
     genreLine.textContent = movie.genres?.join(' • ') || 'Genre unknown';
-    card.appendChild(genreLine);
+    info.appendChild(genreLine);
 
-    const meta = document.createElement('div');
-    meta.className = 'film-card__meta';
-    const metaBits = [];
-    if (movie.runtime) metaBits.push(`${movie.runtime} min`);
-    if (movie.cast?.length) metaBits.push(`Cast: ${movie.cast.join(', ')}`);
-    meta.textContent = metaBits.join(' • ') || 'Details updating…';
-    card.appendChild(meta);
+    if (movie.runtime) {
+        const runtimeLine = document.createElement('p');
+        runtimeLine.className = 'film-card__runtime';
+        runtimeLine.textContent = `${movie.runtime} min`;
+        info.appendChild(runtimeLine);
+    }
+
+    header.appendChild(info);
+    card.appendChild(header);
+
+    const details = document.createElement('div');
+    details.className = 'film-card__details';
+
+    if (movie.cast?.length) {
+        const castLine = document.createElement('p');
+        castLine.className = 'film-card__cast';
+        castLine.textContent = `Cast: ${movie.cast.join(', ')}`;
+        details.appendChild(castLine);
+    }
 
     const summary = document.createElement('p');
     summary.className = 'film-card__summary';
     summary.textContent = movie.overview || 'No synopsis provided.';
-    card.appendChild(summary);
+    details.appendChild(summary);
 
     const ratingsRow = document.createElement('div');
     ratingsRow.className = 'film-card__ratings';
     ratingsRow.appendChild(buildRatingBadge('IMDb', movie.ratings?.imdb?.score));
     ratingsRow.appendChild(buildRatingBadge('Rotten Tomatoes', movie.ratings?.rotten_tomatoes?.score, '%'));
     ratingsRow.appendChild(buildRatingBadge('TMDB', movie.ratings?.tmdb?.score));
-    card.appendChild(ratingsRow);
+    details.appendChild(ratingsRow);
 
     const providersRow = document.createElement('div');
     providersRow.className = 'film-card__providers';
@@ -663,7 +681,7 @@ function createMovieCard(movie) {
     if (!providerCount) {
         providersLabel.textContent = 'Not on selected services yet';
     }
-    card.appendChild(providersRow);
+    details.appendChild(providersRow);
 
     const actions = document.createElement('div');
     actions.className = 'film-card__actions';
@@ -676,7 +694,9 @@ function createMovieCard(movie) {
     trailerLink.addEventListener('click', () => addRecentlyViewed(movie));
 
     actions.append(trailerLink);
-    card.appendChild(actions);
+    details.appendChild(actions);
+
+    card.appendChild(details);
 
     card.addEventListener('click', (event) => {
         if (event.target.closest('a') || event.target.closest('button')) {
