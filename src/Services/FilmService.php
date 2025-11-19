@@ -296,8 +296,6 @@ final class FilmService
         $countryProviders = $results[$region] ?? [];
         $buckets = [
             $countryProviders['flatrate'] ?? [],
-            $countryProviders['rent'] ?? [],
-            $countryProviders['buy'] ?? [],
             $countryProviders['ads'] ?? [],
         ];
         $availableIds = [];
