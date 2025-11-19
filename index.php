@@ -54,8 +54,6 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
 <body class="app-shell" data-scroll-effects="enabled">
 <div class="parallax-wrapper" aria-hidden="true">
     <div class="parallax-layer parallax-layer--far" data-parallax-layer data-depth="0.05"></div>
-    <div class="parallax-layer parallax-layer--mid" data-parallax-layer data-depth="0.12"></div>
-    <div class="parallax-layer parallax-layer--near" data-parallax-layer data-depth="0.25"></div>
     <div class="parallax-layer parallax-layer--veil" data-parallax-layer data-depth="0.02"></div>
 </div>
 <noscript>

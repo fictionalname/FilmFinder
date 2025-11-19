@@ -51,30 +51,18 @@ body[data-scroll-effects="enabled"] .parallax-wrapper {
 
 .parallax-layer {
     position: absolute;
-    inset: -15vh -10vw;
-    background-repeat: repeat;
-    background-size: 640px 640px;
+    inset: -20vh -20vw;
     opacity: 0.6;
     transform: translate3d(0, 0, 0);
     background-attachment: scroll;
+    background-repeat: repeat;
 }
 
 .parallax-layer--far {
     background-image: url('../images/parallax-stars.jpg');
-    opacity: 0.35;
-    filter: blur(1px);
-}
-
-.parallax-layer--mid {
-    background-image: url('../images/parallax-stars.jpg');
-    opacity: 0.5;
-    background-size: 560px 560px;
-}
-
-.parallax-layer--near {
-    background-image: url('../images/parallax-stars.jpg');
-    opacity: 0.75;
-    background-size: 420px 420px;
+    background-size: 720px 720px;
+    opacity: 0.4;
+    filter: blur(0.5px);
 }
 
 .parallax-layer--veil {
@@ -375,12 +363,13 @@ select option {
     flex-direction: column;
     gap: var(--ff-spacing-sm);
     height: 100%;
-    border-radius: 0;
-    border: none;
-    width: 100%;
-    background: rgba(5, 7, 11, 0.2);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(6, 8, 12, 0.85);
     padding: var(--ff-spacing-md);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(28px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
 }
 
 .film-card__header {
@@ -600,7 +589,7 @@ select option {
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 220ms ease, transform 220ms ease;
+    transition: opacity 600ms ease, transform 600ms ease;
 }
 
 .scroll-top.is-visible {
