@@ -36,27 +36,33 @@ final class FilmService
         if (count($filters['providers']) === 0) {
             return $this->emptyListResponse($filters);
         }
-        $discover = $this->tmdb->discoverMovies($filters);
-        $results = $discover['results'] ?? [];
+        if (!empty($filters['query'])) {
+            return $this->buildSearchResponse($filters);
+        }
+
+        $collection = $this->collectMoviesForProviders($filters);
+        $sortedEntries = $this->sortAggregatedEntries($collection['entries'], $filters['sort']);
         $movies = [];
 
-        foreach ($results as $movie) {
-            $formatted = $this->formatMovie($movie, $filters['providers']);
-            if (!$this->hasProviderAvailability($formatted)) {
+        foreach ($sortedEntries as $entry) {
+            $formatted = $this->formatMovie($entry['movie'], $filters['providers'], $entry['host_providers']);
+            if (!$this->hasProviderAvailability($formatted, $filters['providers'])) {
                 continue;
             }
             $movies[] = $formatted;
         }
 
+        $currentPage = max(1, (int) $filters['page']);
+
         return [
             'results' => $movies,
             'pagination' => [
-                'page' => $discover['page'] ?? $filters['page'],
-                'total_pages' => $discover['total_pages'] ?? 1,
-                'total_results' => $discover['total_results'] ?? count($movies),
+                'page' => $currentPage,
+                'total_pages' => $collection['total_pages'],
+                'total_results' => $collection['total_results'],
             ],
             'providers' => [
-                'summary' => $this->providerSummary($movies),
+                'summary' => $this->providerSummary($movies, $collection['provider_totals']),
                 'selected' => $filters['providers'],
                 'available' => $this->providers,
             ],
@@ -85,19 +91,20 @@ final class FilmService
         $cacheKey = 'highlights_' . md5(json_encode($filters));
 
         $payload = $this->cache->remember($cacheKey, $ttl, function () use ($filters) {
-            $discover = $this->tmdb->discoverMovies($filters);
+            $collection = $this->collectMoviesForProviders($filters);
+            $sortedEntries = $this->sortAggregatedEntries($collection['entries'], $filters['sort']);
             $movies = [];
 
-        foreach ($discover['results'] ?? [] as $movie) {
-            $formatted = $this->formatMovie($movie, $filters['providers']);
-            if (!$this->hasProviderAvailability($formatted)) {
-                continue;
+            foreach ($sortedEntries as $entry) {
+                $formatted = $this->formatMovie($entry['movie'], $filters['providers'], $entry['host_providers']);
+                if (!$this->hasProviderAvailability($formatted, $filters['providers'])) {
+                    continue;
+                }
+                $movies[] = $formatted;
+                if (count($movies) >= 3) {
+                    break;
+                }
             }
-            $movies[] = $formatted;
-            if (count($movies) >= 3) {
-                break;
-            }
-        }
 
             return $movies;
         });
@@ -105,6 +112,124 @@ final class FilmService
         return [
             'results' => $payload,
             'filters' => $filters,
+        ];
+    }
+
+    private function collectMoviesForProviders(array $filters): array
+    {
+        $entries = [];
+        $providerTotals = [];
+        $maxTotalPages = 1;
+        $totalResults = 0;
+
+        foreach ($filters['providers'] as $providerKey) {
+            $discover = $this->tmdb->discoverMoviesForProvider($providerKey, $filters);
+            $providerTotals[$providerKey] = (int) ($discover['total_results'] ?? 0);
+            $maxTotalPages = max($maxTotalPages, (int) ($discover['total_pages'] ?? 1));
+            $totalResults += $providerTotals[$providerKey];
+
+            foreach ($discover['results'] ?? [] as $movie) {
+                $movieId = (int) ($movie['id'] ?? 0);
+                if ($movieId === 0) {
+                    continue;
+                }
+
+                if (!isset($entries[$movieId])) {
+                    $entries[$movieId] = [
+                        'movie' => $movie,
+                        'host_providers' => [],
+                    ];
+                }
+
+                if (!in_array($providerKey, $entries[$movieId]['host_providers'], true)) {
+                    $entries[$movieId]['host_providers'][] = $providerKey;
+                }
+            }
+        }
+
+        return [
+            'entries' => array_values($entries),
+            'provider_totals' => $providerTotals,
+            'total_pages' => (int) max(1, $maxTotalPages),
+            'total_results' => (int) max($totalResults, count($entries)),
+        ];
+    }
+
+    private function sortAggregatedEntries(array $entries, string $sort): array
+    {
+        if (count($entries) <= 1) {
+            return $entries;
+        }
+
+        [$field, $direction] = array_pad(explode('.', $sort), 2, 'desc');
+        $direction = strtolower($direction) === 'asc' ? 'asc' : 'desc';
+
+        usort($entries, function (array $left, array $right) use ($field, $direction) {
+            return $this->compareMovies($left['movie'], $right['movie'], $field, $direction);
+        });
+
+        return $entries;
+    }
+
+    private function compareMovies(array $left, array $right, string $field, string $direction): int
+    {
+        $valueLeft = $this->extractSortValue($left, $field);
+        $valueRight = $this->extractSortValue($right, $field);
+
+        if ($valueLeft === $valueRight) {
+            return 0;
+        }
+
+        $result = $valueLeft <=> $valueRight;
+
+        return $direction === 'asc' ? $result : $result * -1;
+    }
+
+    private function extractSortValue(array $movie, string $field): float
+    {
+        switch ($field) {
+            case 'primary_release_date':
+                $date = $movie['release_date'] ?? null;
+                return $date ? (float) strtotime($date) : 0.0;
+            case 'vote_average':
+                return (float) ($movie['vote_average'] ?? 0);
+            case 'vote_count':
+                return (float) ($movie['vote_count'] ?? 0);
+            case 'popularity':
+            default:
+                return (float) ($movie['popularity'] ?? 0);
+        }
+    }
+
+    private function buildSearchResponse(array $filters): array
+    {
+        $discover = $this->tmdb->discoverMovies($filters);
+        $results = $discover['results'] ?? [];
+        $movies = [];
+
+        foreach ($results as $movie) {
+            $formatted = $this->formatMovie($movie, $filters['providers']);
+            if (!$this->hasProviderAvailability($formatted, $filters['providers'])) {
+                continue;
+            }
+            $movies[] = $formatted;
+        }
+
+        return [
+            'results' => $movies,
+            'pagination' => [
+                'page' => $discover['page'] ?? $filters['page'],
+                'total_pages' => $discover['total_pages'] ?? 1,
+                'total_results' => $discover['total_results'] ?? count($movies),
+            ],
+            'providers' => [
+                'summary' => $this->providerSummary($movies),
+                'selected' => $filters['providers'],
+                'available' => $this->providers,
+            ],
+            'filters' => [
+                'applied' => $filters,
+            ],
         ];
     }
 
@@ -173,12 +298,12 @@ final class FilmService
         return $dt ? $dt->format('Y-m-d') : null;
     }
 
-    private function formatMovie(array $movie, array $selectedProviders = []): array
+    private function formatMovie(array $movie, array $selectedProviders = [], array $hostProviders = []): array
     {
         $movieId = (int) $movie['id'];
         $details = $this->tmdb->movieDetails($movieId);
         $genres = $this->mapGenres($movie['genre_ids'] ?? []);
-        $providers = $this->extractProviders($details, $selectedProviders);
+        $providers = $this->extractProviders($details, $selectedProviders, $hostProviders);
 
         return [
             'id' => $movieId,
@@ -295,7 +420,7 @@ final class FilmService
         return null;
     }
 
-    private function extractProviders(array $details, array $selectedProviders = []): array
+    private function extractProviders(array $details, array $selectedProviders = [], array $hostProviders = []): array
     {
         $results = $details['watch/providers']['results'] ?? [];
         $region = Config::get('app.region', 'GB');
@@ -314,15 +439,17 @@ final class FilmService
         $providers = [];
 
         foreach ($this->providers as $key => $provider) {
+            $isHost = in_array($key, $hostProviders, true);
             $providers[$key] = [
                 'label' => $provider['label'],
                 'color' => $provider['color'],
-                'available' => in_array((int) $provider['id'], $availableIds, true),
+                'available' => $isHost ? true : in_array((int) $provider['id'], $availableIds, true),
+                'host' => $isHost,
             ];
         }
 
         $hasMatch = array_reduce($providers, static fn ($carry, $provider) => $carry || !empty($provider['available']), false);
-        if (!$hasMatch && count($selectedProviders) === 1) {
+        if (!$hasMatch && count($selectedProviders) === 1 && empty($hostProviders)) {
             foreach ($selectedProviders as $selectedKey) {
                 if (isset($providers[$selectedKey])) {
                     $providers[$selectedKey]['available'] = true;
@@ -333,7 +460,7 @@ final class FilmService
         return $providers;
     }
 
-    private function providerSummary(array $movies): array
+    private function providerSummary(array $movies, array $overrideTotals = []): array
     {
         $summary = [];
         foreach ($this->providers as $key => $provider) {
@@ -342,6 +469,16 @@ final class FilmService
                 'color' => $provider['color'],
                 'count' => 0,
             ];
+        }
+
+        if (!empty($overrideTotals)) {
+            foreach ($overrideTotals as $key => $count) {
+                if (isset($summary[$key])) {
+                    $summary[$key]['count'] = (int) $count;
+                }
+            }
+
+            return $summary;
         }
 
         foreach ($movies as $movie) {
@@ -355,13 +492,20 @@ final class FilmService
         return $summary;
     }
 
-    private function hasProviderAvailability(array $movie): bool
+    private function hasProviderAvailability(array $movie, array $selectedProviders = []): bool
     {
         if (empty($movie['providers'])) {
             return false;
         }
-        foreach ($movie['providers'] as $provider) {
-            if (!empty($provider['available'])) {
+
+        $targets = $selectedProviders;
+        if (count($targets) === 0) {
+            $targets = array_keys($this->providers);
+        }
+
+        foreach ($targets as $providerKey) {
+            $provider = $movie['providers'][$providerKey] ?? null;
+            if ($provider && !empty($provider['available'])) {
                 return true;
             }
         }

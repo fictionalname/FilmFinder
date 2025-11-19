@@ -36,7 +36,35 @@ final class TmdbClient
         }
 
         $params = $this->buildDiscoverParams($filters);
+        $providerIds = $this->resolveProviderIds($filters);
+        if (!empty($providerIds)) {
+            $params['with_watch_providers'] = implode('|', $providerIds);
+        }
         $cacheKey = 'discover_' . md5(json_encode($params));
+
+        return $this->cache->remember($cacheKey, $ttl, function () use ($params) {
+            return $this->request('discover/movie', $params);
+        });
+    }
+
+    /**
+     * Discover movies for a specific provider to keep per-provider counts accurate.
+     */
+    public function discoverMoviesForProvider(string $providerKey, array $filters): array
+    {
+        $providersConfig = Config::get('providers', []);
+        if (!isset($providersConfig[$providerKey]['id'])) {
+            throw new RuntimeException("Unknown provider key [{$providerKey}] supplied to discoverMoviesForProvider.");
+        }
+
+        if (!empty($filters['query'])) {
+            throw new RuntimeException('discoverMoviesForProvider does not support search queries.');
+        }
+
+        $ttl = (int) Config::get('cache.ttl.discover', 1800);
+        $params = $this->buildDiscoverParams($filters);
+        $params['with_watch_providers'] = (string) $providersConfig[$providerKey]['id'];
+        $cacheKey = sprintf('discover_%s_%s', $providerKey, md5(json_encode($params)));
 
         return $this->cache->remember($cacheKey, $ttl, function () use ($params) {
             return $this->request('discover/movie', $params);
@@ -81,24 +109,10 @@ final class TmdbClient
      */
     private function buildDiscoverParams(array $filters): array
     {
-        $providersConfig = Config::get('providers', []);
-        $providerIds = [];
-
-        if (!empty($filters['providers']) && is_array($filters['providers'])) {
-            foreach ($filters['providers'] as $requestProvider) {
-                if (isset($providersConfig[$requestProvider]['id'])) {
-                    $providerIds[] = (string) $providersConfig[$requestProvider]['id'];
-                }
-            }
-        } else {
-            $providerIds = array_map(static fn ($provider) => (string) $provider['id'], $providersConfig);
-        }
-
         $params = array_merge($this->defaultParams, [
-            'with_watch_providers' => implode('|', $providerIds),
             'include_adult' => 'false',
             'include_video' => 'false',
-            'with_watch_monetization_types' => 'flatrate',
+            'with_watch_monetization_types' => 'flatrate|ads',
             'sort_by' => $filters['sort'] ?? 'popularity.desc',
             'page' => (int) ($filters['page'] ?? 1),
         ]);
@@ -117,6 +131,24 @@ final class TmdbClient
         }
 
         return $params;
+    }
+
+    private function resolveProviderIds(array $filters): array
+    {
+        $providersConfig = Config::get('providers', []);
+        $providerIds = [];
+
+        if (!empty($filters['providers']) && is_array($filters['providers'])) {
+            foreach ($filters['providers'] as $requestProvider) {
+                if (isset($providersConfig[$requestProvider]['id'])) {
+                    $providerIds[] = (string) $providersConfig[$requestProvider]['id'];
+                }
+            }
+        } else {
+            $providerIds = array_map(static fn ($provider) => (string) $provider['id'], $providersConfig);
+        }
+
+        return $providerIds;
     }
 
     private function buildSearchParams(array $filters): array

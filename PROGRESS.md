@@ -47,3 +47,4 @@
 - Genre filters now use OR logic (TMDB `with_genres` pipe-separated) so selecting multiple genres returns any matching film.
 - Ensured provider/genre filter buttons register a single click handler so subsequent taps no longer cancel themselves and multi-selection works reliably.
 - Documented testing/deployment roadmap; next focus is executing regression + accessibility checks.
+- Completely rebuilt the film collection pipeline so each provider is fetched independently for the UK region, aggregated/deduplicated server-side, restricted to flatrate/ad-supported monetization, and annotated with explicit host metadata so film cards, highlights, and provider summaries all reflect the true availability counts.

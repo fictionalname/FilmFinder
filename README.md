@@ -5,6 +5,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 ## Current Status
 - Requirements + visual direction captured; typography locked to Space Grotesk (headings) and Sora (body) for consistent futuristic styling.
 - Backend foundations complete: bootstrap/config, filesystem cache store, TMDB client wrapper, FilmService (normalisation, runtime/certification/cast enrichment, provider summaries, genre-aware highlights), and a single API entry (`api.php`) exposing discover/metadata/highlights endpoints.
+- Film collection is now provider-scoped: each Netflix/Amazon/Disney/Apple feed is discovered independently for the UK region, filtered to TMDB's flatrate + ad-supported tiers, deduplicated server-side, and annotated with host metadata so provider summaries, highlights, and cards stay accurate.
 - Frontend experience live: PHP-driven `index.php` with forced refresh/version tokens, compact glass layout, rectangular chips/buttons, year-only release filters, floating Filters FAB/overlay, provider summary chips that double as toggles, highlight row (desktop/tablet only), and grid/list view controls (hidden on mobile).
 - A floating glass “status pill” hovers over the content on all breakpoints and simply summarizes the provider and film totals without adding extra dropdowns.
 - Release window filtering only exposes years and now keeps the end year equal to or newer than the start year automatically.
