@@ -52,3 +52,4 @@
 - Centered the Watch Trailer CTA text, kept it anchored with the card footers, and added a film-inspired SVG favicon so the browser tab and on-card controls echo the same cinematic branding.
 - Wrapped the entire experience in a removable parallax starfield: the attached JPG now drives layered background planes that can be disabled instantly by removing `data-scroll-effects="enabled"` on `<body>`, keeping the effect purely opt-in.
 - Removed the legacy gradient backdrop so the scrolling experience relies solely on the starfield parallax layers, delivering a cleaner, more cohesive motion effect.
+- Dropped the blue “glow” overlay layer so the starfield now renders as a pure black canvas with just the white stars moving in parallax.
