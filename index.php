@@ -229,8 +229,9 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             <p>Try adjusting the genres or providers to widen the search.</p>
             <button class="ghost-button" data-action="reset-filters">Reset Filters</button>
         </div>
-        <div class="infinite-sentinel" data-role="infinite-sentinel"></div>
-    </main>
+          <div class="infinite-sentinel" data-role="infinite-sentinel"></div>
+          <button class="scroll-top" data-action="scroll-top" type="button" aria-label="Return to top">↑</button>
+      </main>
 
     <button class="floating-filter-btn" data-action="open-overlay">
         Filters

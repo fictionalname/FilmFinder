@@ -10,11 +10,12 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - A floating glass “status pill” hovers over the content on all breakpoints and simply summarizes the provider and film totals without adding extra dropdowns.
 - Release window filtering only exposes years and now keeps the end year equal to or newer than the start year automatically.
 - Genre filters now behave as OR selections so choosing multiple genres surfaces titles matching any of the chosen categories.
-- Optional scroll effect: a layered parallax starfield (fed by the included JPG, with a transparent wrapper) sits behind the layout whenever `<body data-scroll-effects="enabled">` is present; remove or change that attribute for an instant return to the still dark canvas.
+- Optional scroll effect: a layered, repeat-enabled parallax starfield (fed by the included JPG, with a transparent wrapper) sits behind the layout whenever `<body data-scroll-effects="enabled">` is present; remove or change that attribute for an instant return to the still dark canvas.
 - Mobile filter UX: the floating Filters FAB appears only on narrow screens when the overlay is closed and automatically hides while the sheet is visible, with the top status pill and layout controls hidden on mobile so the film grid has maximal breathing room.
 - Client logic implemented (`assets/js/app.js`): metadata loading, filter mirroring across desktop/mobile, multi-genre/provider selection with persistent state, provider counters synced with filter state, query-string + localStorage sync, debounced backend calls, sentinel-driven infinite scroll, genre-aware highlights, provider count updates, empty/loading states, and locally stored recently viewed chips (hidden on small screens).
 - Film cards show runtime, BBFC icons pinned over the poster, cast, provider badges, trailer links, and IMDb / Rotten Tomatoes badges derived heuristically from TMDB scores (permitted data source), with the desktop layout pinning the ratings/availability/trailer row to the bottom for perfectly aligned footers.
-- Film cards now sit on a 20% opaque backdrop with added blur so the starfield shines through while the card copy stays legible.
+- Film cards now span their grid tile with straight edges and a 20% opaque backdrop so the starfield is visible through the entire card surface.
+- A scroll-to-top arrow fades in at the bottom-center of the film grid whenever you scroll inside the main view, letting you tap or click it to glide back to the top.
 - Custom film-inspired SVG favicon keeps the browser tab and installed shortcuts on-brand.
 
 ## Core Objectives

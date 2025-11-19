@@ -66,6 +66,7 @@ const elements = {
     clearRecentButton: document.querySelector('[data-action="clear-recent"]'),
     sentinel: document.querySelector('[data-role="infinite-sentinel"]'),
     layoutToggle: document.querySelector('[data-role="layout-toggle"]'),
+    scrollTopButton: document.querySelector('[data-action="scroll-top"]'),
 };
 
 const scrollEffectsState = {
@@ -109,11 +110,12 @@ async function init() {
         bindApplyButtons();
         bindOverlayControls();
         bindRecentControls();
-        bindLayoutToggle();
-        loadPersistedLayout();
-        syncInputMirrors();
-        initScrollEffects();
-        updateProviderSummary();
+    bindLayoutToggle();
+    loadPersistedLayout();
+    syncInputMirrors();
+    initScrollEffects();
+    initScrollTopControl();
+    updateProviderSummary();
         await applyFilters({ resetPage: true });
     } catch (error) {
         console.error(error);
@@ -656,6 +658,26 @@ function updateParallaxValues() {
             layer.style.transform = `translate3d(0, ${translateY}px, 0)`;
         });
     }
+}
+
+function initScrollTopControl() {
+    if (!elements.scrollTopButton) {
+        return;
+    }
+    elements.scrollTopButton.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    window.addEventListener('scroll', updateScrollTopVisibility, { passive: true });
+    updateScrollTopVisibility();
+}
+
+function updateScrollTopVisibility() {
+    if (!elements.scrollTopButton || !elements.filmGrid) {
+        return;
+    }
+    const threshold = Math.max(elements.filmGrid.offsetTop - window.innerHeight / 3, 120);
+    const shouldShow = window.scrollY > threshold;
+    elements.scrollTopButton.classList.toggle('is-visible', shouldShow);
 }
 
 function createMovieCard(movie) {

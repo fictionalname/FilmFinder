@@ -50,8 +50,8 @@
 - Completely rebuilt the film collection pipeline so each provider is fetched independently for the UK region, aggregated/deduplicated server-side, restricted to flatrate/ad-supported monetization, and annotated with explicit host metadata so film cards, highlights, and provider summaries all reflect the true availability counts.
 - Desktop film cards now pin their ratings, availability chips, and trailer action row to the bottom edge so every card footer aligns perfectly across the grid.
 - Centered the Watch Trailer CTA text, kept it anchored with the card footers, and added a film-inspired SVG favicon so the browser tab and on-card controls echo the same cinematic branding.
-- Wrapped the entire experience in a removable parallax starfield: the attached JPG now drives layered background planes that can be disabled instantly by removing `data-scroll-effects="enabled"` on `<body>`, keeping the effect purely opt-in.
-- Removed the legacy gradient backdrop so the scrolling experience relies solely on the starfield parallax layers, delivering a cleaner, more cohesive motion effect.
+- Wrapped the entire experience in a removable parallax starfield: the attached JPG now drives layered background planes that can be disabled instantly by removing `data-scroll-effects="enabled"` on `<body>`, keeping the effect purely opt-in while the repeat-enabled layers keep covering the viewport as you scroll.
 - Dropped the blue “glow” overlay layer so the starfield now renders as a pure black canvas with just the white stars moving in parallax.
 - Set the parallax wrapper itself to transparent to remove any residual gradient tint at the top of the viewport.
-- Film cards now use a 20% opaque background with a strong blur so the starfield shows through the boxes without sacrificing readability.
+- Film cards now span their entire grid cell with straight edges and a 20% opaque, blurred backdrop so the starfield is visible throughout each card.
+- Added a bottom-center scroll-to-top arrow that fades in once the user scrolls through the main film area and smoothly brings them back to the top when tapped.
