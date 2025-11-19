@@ -316,7 +316,7 @@ final class FilmService
         }
 
         $hasMatch = array_reduce($providers, static fn ($carry, $provider) => $carry || !empty($provider['available']), false);
-        if (!$hasMatch && count($selectedProviders)) {
+        if (!$hasMatch && count($selectedProviders) === 1) {
             foreach ($selectedProviders as $selectedKey) {
                 if (isset($providers[$selectedKey])) {
                     $providers[$selectedKey]['available'] = true;
