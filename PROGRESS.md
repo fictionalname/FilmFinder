@@ -51,3 +51,4 @@
 - Desktop film cards now pin their ratings, availability chips, and trailer action row to the bottom edge so every card footer aligns perfectly across the grid.
 - Centered the Watch Trailer CTA text, kept it anchored with the card footers, and added a film-inspired SVG favicon so the browser tab and on-card controls echo the same cinematic branding.
 - Wrapped the entire experience in a removable parallax starfield: the attached JPG now drives layered background planes that can be disabled instantly by removing `data-scroll-effects="enabled"` on `<body>`, keeping the effect purely opt-in.
+- Removed the legacy gradient backdrop so the scrolling experience relies solely on the starfield parallax layers, delivering a cleaner, more cohesive motion effect.

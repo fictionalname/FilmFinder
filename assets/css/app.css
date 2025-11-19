@@ -30,17 +30,7 @@ body {
     font-family: var(--ff-font-body);
     font-size: 15px;
     line-height: 1.45;
-    background: radial-gradient(
-            circle at calc(5% + var(--parallax-offset-x-1, 0px)) calc(20% + var(--parallax-offset-y-1, 0px)),
-            rgba(49, 86, 255, 0.2),
-            transparent 50%
-        ),
-        radial-gradient(
-            circle at calc(90% + var(--parallax-offset-x-2, 0px)) calc(0% + var(--parallax-offset-y-2, 0px)),
-            rgba(0, 183, 255, 0.22),
-            transparent 40%
-        ),
-        var(--ff-color-bg);
+    background: var(--ff-color-bg);
     color: var(--ff-color-strong);
     overflow-x: hidden;
 }
