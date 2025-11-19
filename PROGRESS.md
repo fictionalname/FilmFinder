@@ -54,3 +54,4 @@
 - Removed the legacy gradient backdrop so the scrolling experience relies solely on the starfield parallax layers, delivering a cleaner, more cohesive motion effect.
 - Dropped the blue “glow” overlay layer so the starfield now renders as a pure black canvas with just the white stars moving in parallax.
 - Set the parallax wrapper itself to transparent to remove any residual gradient tint at the top of the viewport.
+- Film cards now use a 20% opaque background with a strong blur so the starfield shows through the boxes without sacrificing readability.

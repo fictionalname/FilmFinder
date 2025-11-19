@@ -376,8 +376,9 @@ select option {
     height: 100%;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(5, 7, 11, 0.92);
+    background: rgba(5, 7, 11, 0.2);
     padding: var(--ff-spacing-md);
+    backdrop-filter: blur(20px);
 }
 
 .film-card__header {
