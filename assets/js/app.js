@@ -734,10 +734,9 @@ function createMovieCard(movie) {
         providerCount++;
         providersRow.appendChild(createProviderBadge(provider));
     });
-    if (!providerCount) {
-        providersLabel.textContent = 'Not on selected services yet';
+    if (providerCount) {
+        details.appendChild(providersRow);
     }
-    details.appendChild(providersRow);
 
     const actions = document.createElement('div');
     actions.className = 'film-card__actions';
