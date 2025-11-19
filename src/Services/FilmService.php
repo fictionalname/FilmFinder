@@ -292,9 +292,20 @@ final class FilmService
     private function extractProviders(array $details, array $selectedProviders = []): array
     {
         $results = $details['watch/providers']['results'] ?? [];
-        $countryProviders = $results[Config::get('app.region', 'GB')] ?? [];
-        $flatrate = $countryProviders['flatrate'] ?? [];
-        $availableIds = array_map(static fn ($provider) => (int) $provider['provider_id'], $flatrate);
+        $region = Config::get('app.region', 'GB');
+        $countryProviders = $results[$region] ?? [];
+        $buckets = [
+            $countryProviders['flatrate'] ?? [],
+            $countryProviders['rent'] ?? [],
+            $countryProviders['buy'] ?? [],
+            $countryProviders['ads'] ?? [],
+        ];
+        $availableIds = [];
+        foreach ($buckets as $bucket) {
+            foreach ($bucket as $provider) {
+                $availableIds[] = (int) $provider['provider_id'];
+            }
+        }
 
         $providers = [];
 
@@ -307,7 +318,7 @@ final class FilmService
         }
 
         $hasMatch = array_reduce($providers, static fn ($carry, $provider) => $carry || !empty($provider['available']), false);
-        if (!$hasMatch && count($selectedProviders) === 1) {
+        if (!$hasMatch && count($selectedProviders)) {
             foreach ($selectedProviders as $selectedKey) {
                 if (isset($providers[$selectedKey])) {
                     $providers[$selectedKey]['available'] = true;
