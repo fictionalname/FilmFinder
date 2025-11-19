@@ -42,6 +42,9 @@ final class FilmService
 
         foreach ($results as $movie) {
             $formatted = $this->formatMovie($movie, $filters['providers']);
+            if (!$this->hasProviderAvailability($formatted)) {
+                continue;
+            }
             $movies[] = $formatted;
         }
 
@@ -87,6 +90,9 @@ final class FilmService
 
         foreach ($discover['results'] ?? [] as $movie) {
             $formatted = $this->formatMovie($movie, $filters['providers']);
+            if (!$this->hasProviderAvailability($formatted)) {
+                continue;
+            }
             $movies[] = $formatted;
             if (count($movies) >= 3) {
                 break;
@@ -347,6 +353,19 @@ final class FilmService
         }
 
         return $summary;
+    }
+
+    private function hasProviderAvailability(array $movie): bool
+    {
+        if (empty($movie['providers'])) {
+            return false;
+        }
+        foreach ($movie['providers'] as $provider) {
+            if (!empty($provider['available'])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function emptyListResponse(array $filters): array
