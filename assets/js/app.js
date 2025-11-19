@@ -719,7 +719,6 @@ function createMovieCard(movie) {
     ratingsRow.className = 'film-card__ratings';
     ratingsRow.appendChild(buildRatingBadge('IMDb', movie.ratings?.imdb?.score));
     ratingsRow.appendChild(buildRatingBadge('Rotten Tomatoes', movie.ratings?.rotten_tomatoes?.score, '%'));
-    ratingsRow.appendChild(buildRatingBadge('TMDB', movie.ratings?.tmdb?.score));
     details.appendChild(ratingsRow);
 
     const providersRow = document.createElement('div');
