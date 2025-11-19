@@ -511,6 +511,10 @@ select option {
     flex: 1;
     padding: 0.35rem 0.4rem;
     font-size: 0.75rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 @media (min-width: 1024px) {

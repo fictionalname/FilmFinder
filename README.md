@@ -14,6 +14,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Mobile filter UX: the floating Filters FAB appears only on narrow screens when the overlay is closed and automatically hides while the sheet is visible, with the top status pill and layout controls hidden on mobile so the film grid has maximal breathing room.
 - Client logic implemented (`assets/js/app.js`): metadata loading, filter mirroring across desktop/mobile, multi-genre/provider selection with persistent state, provider counters synced with filter state, query-string + localStorage sync, debounced backend calls, sentinel-driven infinite scroll, genre-aware highlights, provider count updates, empty/loading states, and locally stored recently viewed chips (hidden on small screens).
 - Film cards show runtime, BBFC icons pinned over the poster, cast, provider badges, trailer links, and IMDb / Rotten Tomatoes badges derived heuristically from TMDB scores (permitted data source), with the desktop layout pinning the ratings/availability/trailer row to the bottom for perfectly aligned footers.
+- Custom film-inspired SVG favicon keeps the browser tab and installed shortcuts on-brand.
 
 ## Core Objectives
 - Aggregate films currently on Netflix, Amazon, Disney, and Apple (UK region) on demand using TMDB discover endpoints with caching (30–60 min TTL) and no bulk provider scrape.

@@ -22,6 +22,7 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
     <meta name="description" content="<?= htmlspecialchars($metaDescription, ENT_QUOTES) ?>">
     <meta name="theme-color" content="#05060a">
     <title><?= htmlspecialchars($appName) ?></title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=<?= urlencode($version) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600&display=swap" rel="stylesheet">
