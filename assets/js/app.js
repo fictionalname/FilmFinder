@@ -9,7 +9,7 @@ let persistedFiltersLoaded = false;
 
 const YEARS = (() => {
     const start = 1980;
-    const current = new Date().getFullYear() + 1;
+    const current = 2025;
     const list = [];
     for (let year = current; year >= start; year -= 1) {
         list.push(year);
