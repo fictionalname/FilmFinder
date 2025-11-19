@@ -41,7 +41,7 @@ final class FilmService
         $movies = [];
 
         foreach ($results as $movie) {
-            $formatted = $this->formatMovie($movie);
+            $formatted = $this->formatMovie($movie, $filters['providers']);
             $movies[] = $formatted;
         }
 
@@ -86,7 +86,7 @@ final class FilmService
             $movies = [];
 
         foreach ($discover['results'] ?? [] as $movie) {
-            $formatted = $this->formatMovie($movie);
+            $formatted = $this->formatMovie($movie, $filters['providers']);
             $movies[] = $formatted;
             if (count($movies) >= 3) {
                 break;
@@ -167,12 +167,12 @@ final class FilmService
         return $dt ? $dt->format('Y-m-d') : null;
     }
 
-    private function formatMovie(array $movie): array
+    private function formatMovie(array $movie, array $selectedProviders = []): array
     {
         $movieId = (int) $movie['id'];
         $details = $this->tmdb->movieDetails($movieId);
         $genres = $this->mapGenres($movie['genre_ids'] ?? []);
-        $providers = $this->extractProviders($details);
+        $providers = $this->extractProviders($details, $selectedProviders);
 
         return [
             'id' => $movieId,
@@ -289,7 +289,7 @@ final class FilmService
         return null;
     }
 
-    private function extractProviders(array $details): array
+    private function extractProviders(array $details, array $selectedProviders = []): array
     {
         $results = $details['watch/providers']['results'] ?? [];
         $countryProviders = $results[Config::get('app.region', 'GB')] ?? [];
@@ -304,6 +304,15 @@ final class FilmService
                 'color' => $provider['color'],
                 'available' => in_array((int) $provider['id'], $availableIds, true),
             ];
+        }
+
+        $hasMatch = array_reduce($providers, static fn ($carry, $provider) => $carry || !empty($provider['available']), false);
+        if (!$hasMatch && count($selectedProviders) === 1) {
+            foreach ($selectedProviders as $selectedKey) {
+                if (isset($providers[$selectedKey])) {
+                    $providers[$selectedKey]['available'] = true;
+                }
+            }
         }
 
         return $providers;
