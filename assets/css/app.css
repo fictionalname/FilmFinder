@@ -607,7 +607,7 @@ select option {
 @media (min-width: 1100px) {
     .floating-status,
     .scroll-top {
-        left: calc(50vw + 180px);
+        left: calc((100vw + 360px) / 2);
     }
 }
 
