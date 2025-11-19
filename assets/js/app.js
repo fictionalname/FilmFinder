@@ -391,6 +391,7 @@ function bindApplyButtons() {
     if (elements.applyOverlayButton) {
         elements.applyOverlayButton.addEventListener('click', () => {
             openOverlay(false);
+            scrollToFilms();
             applyFilters({ resetPage: true });
         });
     }
@@ -827,6 +828,14 @@ function toggleEmptyState() {
             body.textContent = 'Try adjusting providers, genres, search, or years to widen the search.';
         }
     }
+}
+
+function scrollToFilms() {
+    if (!elements.filmGrid) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const behavior = prefersReducedMotion ? 'auto' : 'smooth';
+    const top = elements.filmGrid.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({ top: Math.max(0, top), behavior });
 }
 
 function renderFloatingStatus() {
