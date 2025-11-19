@@ -50,3 +50,4 @@
 - Completely rebuilt the film collection pipeline so each provider is fetched independently for the UK region, aggregated/deduplicated server-side, restricted to flatrate/ad-supported monetization, and annotated with explicit host metadata so film cards, highlights, and provider summaries all reflect the true availability counts.
 - Desktop film cards now pin their ratings, availability chips, and trailer action row to the bottom edge so every card footer aligns perfectly across the grid.
 - Centered the Watch Trailer CTA text, kept it anchored with the card footers, and added a film-inspired SVG favicon so the browser tab and on-card controls echo the same cinematic branding.
+- Wrapped the entire experience in a removable parallax starfield: the attached JPG now drives layered background planes that can be disabled instantly by removing `data-scroll-effects="enabled"` on `<body>`, keeping the effect purely opt-in.

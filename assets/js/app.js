@@ -71,6 +71,7 @@ const elements = {
 const scrollEffectsState = {
     enabled: Boolean(document.body?.dataset?.scrollEffects === 'enabled'),
     frame: null,
+    layers: [],
 };
 
 const desktopInputs = {
@@ -616,7 +617,11 @@ function renderMovies(movies, { append = false } = {}) {
 }
 
 function initScrollEffects() {
-    if (!scrollEffectsState.enabled) return;
+    if (!scrollEffectsState.enabled) {
+        scrollEffectsState.layers = [];
+        return;
+    }
+    scrollEffectsState.layers = Array.from(document.querySelectorAll('[data-parallax-layer]'));
     scheduleParallax();
     window.addEventListener('scroll', scheduleParallax, { passive: true });
     window.addEventListener('resize', scheduleParallax);
@@ -632,9 +637,10 @@ function scheduleParallax() {
 }
 
 function updateParallaxValues() {
+    const scrollY = window.scrollY;
     const doc = document.documentElement;
     const maxScroll = Math.max(document.body.scrollHeight - window.innerHeight, 1);
-    const progress = Math.min(window.scrollY / maxScroll, 1);
+    const progress = Math.min(scrollY / maxScroll, 1);
     const x1 = progress * 80 - 40;
     const y1 = progress * 40 - 20;
     const x2 = progress * -60 + 30;
@@ -643,6 +649,13 @@ function updateParallaxValues() {
     doc.style.setProperty('--parallax-offset-y-1', `${y1}px`);
     doc.style.setProperty('--parallax-offset-x-2', `${x2}px`);
     doc.style.setProperty('--parallax-offset-y-2', `${y2}px`);
+    if (scrollEffectsState.layers.length) {
+        scrollEffectsState.layers.forEach((layer) => {
+            const depth = parseFloat(layer.dataset.depth || '0');
+            const translateY = scrollY * depth * -1;
+            layer.style.transform = `translate3d(0, ${translateY}px, 0)`;
+        });
+    }
 }
 
 function createMovieCard(movie) {

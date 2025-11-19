@@ -42,6 +42,61 @@ body {
         ),
         var(--ff-color-bg);
     color: var(--ff-color-strong);
+    overflow-x: hidden;
+}
+
+.parallax-wrapper {
+    display: none;
+}
+
+body[data-scroll-effects="enabled"] .parallax-wrapper {
+    position: fixed;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+    background: linear-gradient(180deg, rgba(2, 3, 10, 0.9) 0%, rgba(4, 5, 9, 0.4) 55%, rgba(4, 5, 9, 1) 100%);
+}
+
+.parallax-layer {
+    position: absolute;
+    inset: -15vh -10vw;
+    background-repeat: repeat;
+    background-size: 640px 640px;
+    opacity: 0.6;
+    transform: translate3d(0, 0, 0);
+}
+
+.parallax-layer--far {
+    background-image: url('../images/parallax-stars.jpg');
+    opacity: 0.35;
+    filter: blur(1px);
+}
+
+.parallax-layer--mid {
+    background-image: url('../images/parallax-stars.jpg');
+    opacity: 0.5;
+    background-size: 560px 560px;
+}
+
+.parallax-layer--near {
+    background-image: url('../images/parallax-stars.jpg');
+    opacity: 0.75;
+    background-size: 420px 420px;
+}
+
+.parallax-layer--glow {
+    background: radial-gradient(circle at 30% 20%, rgba(88, 129, 255, 0.35), transparent 45%),
+        radial-gradient(circle at 70% 80%, rgba(0, 196, 255, 0.25), transparent 55%),
+        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06), transparent 65%);
+    opacity: 0.85;
+    mix-blend-mode: screen;
+}
+
+.parallax-layer--veil {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.9));
+    opacity: 0.7;
 }
 
 img {
@@ -60,6 +115,8 @@ select {
     display: grid;
     grid-template-columns: 360px minmax(0, 1fr);
     min-height: 100vh;
+    position: relative;
+    z-index: 1;
 }
 
 @media (max-width: 1100px) {
