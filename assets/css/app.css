@@ -334,6 +334,7 @@ select option {
     display: flex;
     flex-direction: column;
     gap: var(--ff-spacing-sm);
+    height: 100%;
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.08);
     background: rgba(5, 7, 11, 0.92);
@@ -420,6 +421,7 @@ select option {
     display: flex;
     flex-direction: column;
     gap: 0.35rem;
+    flex: 1;
 }
 
 .film-card__cast {
@@ -467,6 +469,7 @@ select option {
 .film-card__summary {
     margin: 0;
     font-size: 0.88rem;
+    flex: 1;
 }
 
 .film-card__ratings {
@@ -508,6 +511,20 @@ select option {
     flex: 1;
     padding: 0.35rem 0.4rem;
     font-size: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+    .film-card__ratings {
+        margin-top: auto;
+    }
+
+    .film-card__providers {
+        margin-top: 0.15rem;
+    }
+
+    .film-card__actions {
+        margin-top: 0.25rem;
+    }
 }
 
 .load-state,
