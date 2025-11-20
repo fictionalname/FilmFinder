@@ -105,6 +105,24 @@ final class TmdbClient
     }
 
     /**
+     * Fetch movie recommendations for the supplied movie ID.
+     */
+    public function movieRecommendations(int $movieId): array
+    {
+        $ttl = (int) Config::get('cache.ttl.metadata', 1800);
+        $cacheKey = 'recommendations_' . $movieId;
+
+        return $this->cache->remember($cacheKey, $ttl, function () use ($movieId) {
+            $data = $this->request("movie/{$movieId}/recommendations", [
+                'language' => $this->defaultParams['language'] ?? 'en-GB',
+                'page' => 1,
+            ]);
+
+            return $data['results'] ?? [];
+        });
+    }
+
+    /**
      * Build TMDB discover params using filters from the client.
      */
     private function buildDiscoverParams(array $filters): array

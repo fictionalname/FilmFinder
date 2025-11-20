@@ -541,6 +541,53 @@ select option {
     letter-spacing: 0.1em;
 }
 
+.film-card__recommendations {
+    margin-top: var(--ff-spacing-sm);
+    padding-top: var(--ff-spacing-sm);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.film-card__recommendations-title {
+    margin: 0 0 var(--ff-spacing-xs);
+    font-size: 0.82rem;
+    color: var(--ff-color-strong);
+    letter-spacing: 0.04em;
+}
+
+.recommendations-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.recommendation-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    font-size: 0.82rem;
+    align-items: baseline;
+}
+
+.recommendation-link {
+    color: var(--ff-color-accent);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.recommendation-link:hover,
+.recommendation-link:focus-visible {
+    text-decoration: underline;
+}
+
+.recommendation-provider {
+    font-size: 0.76rem;
+    color: var(--ff-color-muted);
+    letter-spacing: 0.04em;
+}
+
 .film-card__actions {
     display: flex;
     gap: var(--ff-spacing-xs);
