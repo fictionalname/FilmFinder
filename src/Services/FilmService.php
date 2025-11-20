@@ -545,7 +545,7 @@ final class FilmService
     /**
      * Build the "If you like this film..." recommendation payload.
      */
-    private function buildRecommendations(int $movieId, array $selectedProviders = [], int $limit = 2): array
+    private function buildRecommendations(int $movieId, array $selectedProviders = [], int $limit = 1): array
     {
         if ($limit <= 0) {
             return [];

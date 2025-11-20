@@ -922,7 +922,7 @@ function buildRecommendationBlock(recommendations = []) {
     const list = document.createElement('ul');
     list.className = 'recommendations-list';
 
-    recommendations.slice(0, 2).forEach((rec) => {
+    recommendations.slice(0, 1).forEach((rec) => {
         const item = document.createElement('li');
         item.className = 'recommendation-item';
 
@@ -935,7 +935,7 @@ function buildRecommendationBlock(recommendations = []) {
 
         const provider = document.createElement('span');
         provider.className = 'recommendation-provider';
-        provider.textContent = rec.provider?.label ? `on ${rec.provider.label}` : '';
+        provider.textContent = rec.provider?.label ? ` on ${rec.provider.label}` : '';
 
         item.appendChild(link);
         if (provider.textContent) {
