@@ -256,6 +256,13 @@ final class FilmService
         }
         $genres = array_values(array_unique(array_filter($genres, static fn ($id) => is_numeric($id))));
 
+        $excludeGenres = $filters['exclude_genres'] ?? [];
+        if (is_string($excludeGenres)) {
+            $excludeGenres = array_filter(array_map('trim', explode(',', $excludeGenres)));
+        }
+        $excludeGenres = array_values(array_unique(array_filter($excludeGenres, static fn ($id) => is_numeric($id))));
+        $excludeGenres = array_values(array_diff($excludeGenres, $genres));
+
         $allowedSorts = [
             'popularity.desc',
             'popularity.asc',
@@ -278,6 +285,7 @@ final class FilmService
         return [
             'providers' => $selectedProviders,
             'genres' => $genres,
+            'exclude_genres' => $excludeGenres,
             'sort' => $sort,
             'page' => $page,
             'start_date' => $startDate,

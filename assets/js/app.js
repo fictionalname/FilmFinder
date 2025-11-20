@@ -25,6 +25,7 @@ const state = {
     filters: {
         providers: [],
         genres: [],
+        exclude_genres: [],
         start_year: '',
         end_year: '',
         sort: 'primary_release_date.desc',
@@ -90,6 +91,7 @@ const mobileInputs = {
 };
 
 const scheduleFiltersUpdate = debounce(() => applyFilters({ resetPage: true }), DEBOUNCE_DELAY);
+const genreClickTimers = new Map();
 
 init();
 
@@ -136,9 +138,11 @@ function parseFiltersFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const providers = params.get('providers');
     const genres = params.get('genres');
+    const excluded = params.get('exclude_genres');
     urlFiltersProvided = urlFiltersProvided || Array.from(params.keys()).length > 0;
     state.filters.providers = providers ? providers.split(',').filter(Boolean) : state.filters.providers;
     state.filters.genres = genres ? genres.split(',').filter(Boolean) : state.filters.genres;
+    state.filters.exclude_genres = excluded ? excluded.split(',').filter(Boolean) : state.filters.exclude_genres;
     state.filters.start_year = params.get('start_year') || state.filters.start_year;
     state.filters.end_year = params.get('end_year') || state.filters.end_year;
     state.filters.sort = params.get('sort') || state.filters.sort;
@@ -162,6 +166,7 @@ function loadPersistedFilters() {
             ...saved,
             providers: Array.isArray(saved.providers) ? saved.providers : state.filters.providers,
             genres: Array.isArray(saved.genres) ? saved.genres : state.filters.genres,
+            exclude_genres: Array.isArray(saved.exclude_genres) ? saved.exclude_genres : state.filters.exclude_genres,
         };
         persistedFiltersLoaded = true;
     } catch {
@@ -181,9 +186,17 @@ function sanitizeFilters() {
 
     if (state.metadata.genres.length) {
         const allowed = state.metadata.genres.map((genre) => String(genre.id));
-        state.filters.genres = state.filters.genres
-            .map((id) => String(id))
-            .filter((id) => allowed.includes(id));
+        const normalizeGenres = (list) => Array.from(
+            new Set(
+                (list || [])
+                    .map((id) => String(id))
+                    .filter((id) => allowed.includes(id))
+            )
+        );
+        const includes = normalizeGenres(state.filters.genres);
+        const excludes = normalizeGenres(state.filters.exclude_genres).filter((id) => !includes.includes(id));
+        state.filters.genres = includes;
+        state.filters.exclude_genres = excludes;
     }
 }
 
@@ -239,11 +252,16 @@ function renderGenres() {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'genre-chip';
-            button.dataset.genre = String(genre.id);
-            const active = state.filters.genres.includes(String(genre.id));
-            button.dataset.active = active.toString();
-            button.classList.toggle('is-active', active);
-            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            const normalizedId = String(genre.id);
+            button.dataset.genre = normalizedId;
+            const currentState = getGenreState(normalizedId);
+            const isActive = currentState === 'include';
+            const isExcluded = currentState === 'exclude';
+            button.dataset.state = currentState;
+            button.dataset.active = isActive.toString();
+            button.classList.toggle('is-active', isActive);
+            button.classList.toggle('is-excluded', isExcluded);
+            button.setAttribute('aria-pressed', currentState === 'off' ? 'false' : 'true');
             button.textContent = genre.name;
             container.appendChild(button);
         });
@@ -317,7 +335,13 @@ function bindGenreEvents() {
         container.addEventListener('click', (event) => {
             const target = event.target.closest('[data-genre]');
             if (!target) return;
-            toggleGenre(target.dataset.genre);
+            queueGenreSingleToggle(target.dataset.genre);
+        });
+        container.addEventListener('dblclick', (event) => {
+            const target = event.target.closest('[data-genre]');
+            if (!target) return;
+            event.preventDefault();
+            forceExcludeGenre(target.dataset.genre);
         });
     });
 }
@@ -335,15 +359,58 @@ function toggleProvider(key) {
     scheduleFiltersUpdate();
 }
 
-function toggleGenre(genreId) {
+function queueGenreSingleToggle(genreId) {
+    if (!genreId) return;
     const normalizedId = String(genreId);
-    const current = new Set(state.filters.genres.map(String));
-    if (current.has(normalizedId)) {
-        current.delete(normalizedId);
-    } else {
-        current.add(normalizedId);
+    if (genreClickTimers.has(normalizedId)) {
+        clearTimeout(genreClickTimers.get(normalizedId));
     }
-    state.filters.genres = Array.from(current);
+    const timer = window.setTimeout(() => {
+        const current = getGenreState(normalizedId);
+        const nextState = current === 'off' ? 'include' : 'off';
+        setGenreState(normalizedId, nextState);
+        genreClickTimers.delete(normalizedId);
+    }, 200);
+    genreClickTimers.set(normalizedId, timer);
+}
+
+function forceExcludeGenre(genreId) {
+    if (!genreId) return;
+    const normalizedId = String(genreId);
+    if (genreClickTimers.has(normalizedId)) {
+        clearTimeout(genreClickTimers.get(normalizedId));
+        genreClickTimers.delete(normalizedId);
+    }
+    setGenreState(normalizedId, 'exclude');
+}
+
+function getGenreState(genreId) {
+    const normalizedId = String(genreId);
+    if (state.filters.genres.includes(normalizedId)) {
+        return 'include';
+    }
+    if (state.filters.exclude_genres.includes(normalizedId)) {
+        return 'exclude';
+    }
+    return 'off';
+}
+
+function setGenreState(genreId, targetState) {
+    const normalizedId = String(genreId);
+    if (!normalizedId) return;
+    const currentState = getGenreState(normalizedId);
+    if (currentState === targetState) return;
+    const includeSet = new Set(state.filters.genres.map(String));
+    const excludeSet = new Set(state.filters.exclude_genres.map(String));
+    includeSet.delete(normalizedId);
+    excludeSet.delete(normalizedId);
+    if (targetState === 'include') {
+        includeSet.add(normalizedId);
+    } else if (targetState === 'exclude') {
+        excludeSet.add(normalizedId);
+    }
+    state.filters.genres = Array.from(includeSet);
+    state.filters.exclude_genres = Array.from(excludeSet);
     renderGenres();
     scheduleFiltersUpdate();
 }
@@ -448,6 +515,7 @@ function resetFilters() {
     state.filters = {
         providers: Object.keys(state.metadata.providers),
         genres: [],
+        exclude_genres: [],
         start_year: '',
         end_year: '',
         sort: 'primary_release_date.desc',
@@ -534,6 +602,9 @@ function updateUrlFromFilters() {
     if (state.filters.genres.length) {
         params.set('genres', state.filters.genres.join(','));
     }
+    if (state.filters.exclude_genres.length) {
+        params.set('exclude_genres', state.filters.exclude_genres.join(','));
+    }
     if (state.filters.start_year) {
         params.set('start_year', state.filters.start_year);
     }
@@ -592,7 +663,8 @@ async function fetchMovies(page = 1) {
 function buildFilterParams() {
     const params = {
         providers: state.filters.providers,
-        genres: state.filters.genres,
+        genres: state.filters.genres.length ? state.filters.genres : undefined,
+        exclude_genres: state.filters.exclude_genres.length ? state.filters.exclude_genres : undefined,
         sort: state.filters.sort,
         query: state.filters.query || undefined,
     };

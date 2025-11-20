@@ -55,3 +55,4 @@
 - Set the parallax wrapper itself to transparent to remove any residual gradient tint at the top of the viewport.
 - Film cards now span their entire grid cell with straight edges and a 20% opaque, blurred backdrop so the starfield is visible throughout each card.
 - Added a bottom-center scroll-to-top arrow that fades in once the user scrolls through the main film area and smoothly brings them back to the top when tapped.
+- Genre chips now support three states: single-click to include, double-click to exclude (red state), and a tap to clear, with the backend wiring TMDB `without_genres` for excluded IDs so unwanted categories never appear.
