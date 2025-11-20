@@ -104,23 +104,6 @@ final class TmdbClient
         });
     }
 
-    /**
-     * Fetch similar movies for the supplied movie ID.
-     */
-    public function similarMovies(int $movieId): array
-    {
-        $ttl = (int) Config::get('cache.ttl.metadata', 1800);
-        $cacheKey = 'similar_' . $movieId;
-
-        return $this->cache->remember($cacheKey, $ttl, function () use ($movieId) {
-            $data = $this->request("movie/{$movieId}/similar", [
-                'language' => $this->defaultParams['language'] ?? 'en-GB',
-                'page' => 1,
-            ]);
-
-            return $data['results'] ?? [];
-        });
-    }
 
     /**
      * Build TMDB discover params using filters from the client.

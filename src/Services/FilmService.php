@@ -312,7 +312,6 @@ final class FilmService
         $details = $this->tmdb->movieDetails($movieId);
         $genres = $this->mapGenres($movie['genre_ids'] ?? []);
         $providers = $this->extractProviders($details, $selectedProviders, $hostProviders);
-        $recommendations = $this->buildRecommendations($movieId, $selectedProviders);
 
         return [
             'id' => $movieId,
@@ -334,7 +333,6 @@ final class FilmService
             ),
             'ratings' => $this->buildRatings($movie),
             'providers' => $providers,
-            'recommendations' => $recommendations,
         ];
     }
 
@@ -540,61 +538,6 @@ final class FilmService
                 'applied' => $filters,
             ],
         ];
-    }
-
-    /**
-     * Build the "If you like this film..." recommendation payload.
-     */
-    private function buildRecommendations(int $movieId, array $selectedProviders = [], int $limit = 1): array
-    {
-        if ($limit <= 0) {
-            return [];
-        }
-        $targets = count($selectedProviders) ? $selectedProviders : array_keys($this->providers);
-        $recommendations = $this->tmdb->similarMovies($movieId);
-        if (empty($recommendations)) {
-            return [];
-        }
-        $entries = [];
-
-        foreach ($recommendations as $recommendation) {
-            if (count($entries) >= $limit) {
-                break;
-            }
-            $recommendationId = (int) ($recommendation['id'] ?? 0);
-            if ($recommendationId === 0) {
-                continue;
-            }
-            $details = $this->tmdb->movieDetails($recommendationId);
-            $providers = $this->extractProviders($details, [], []);
-            $matchedProvider = $this->matchRecommendationProvider($providers, $targets);
-            if (!$matchedProvider) {
-                continue;
-            }
-            $entries[] = [
-                'id' => $recommendationId,
-                'title' => $recommendation['title'] ?? $recommendation['name'] ?? 'Untitled',
-                'tmdb_url' => sprintf('https://www.themoviedb.org/movie/%d', $recommendationId),
-                'provider' => [
-                    'key' => $matchedProvider,
-                    'label' => $this->providers[$matchedProvider]['label'] ?? $matchedProvider,
-                    'color' => $this->providers[$matchedProvider]['color'] ?? '#ffffff',
-                ],
-            ];
-        }
-
-        return $entries;
-    }
-
-    private function matchRecommendationProvider(array $providers, array $priorityProviders): ?string
-    {
-        $targets = count($priorityProviders) ? $priorityProviders : array_keys($this->providers);
-        foreach ($targets as $providerKey) {
-            if (!empty($providers[$providerKey]['available'])) {
-                return $providerKey;
-            }
-        }
-        return null;
     }
 
 }

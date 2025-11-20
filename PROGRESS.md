@@ -56,6 +56,5 @@
 - Film cards now span their entire grid cell with straight edges and a 20% opaque, blurred backdrop so the starfield is visible throughout each card.
 - Added a bottom-center scroll-to-top arrow that fades in once the user scrolls through the main film area and smoothly brings them back to the top when tapped.
 - Genre chips now support three states: single-click to include, double-click to exclude (red state), and a tap to clear, with the backend wiring TMDB `without_genres` for excluded IDs so unwanted categories never appear.
-- Each card now features an “If you like this film...” row beneath the availability chips, showing two TMDB recommendations limited to the currently selected providers so it’s easy to remove later by stripping that named block.
 - Added a persistent hit counter stored under `storage/state` and exposed beneath the Reset/See Films buttons so each “See Films” run increments the all-time total without being wiped by deployments.
-- Recommendation block now relies on TMDB's “similar” feed (rather than general recommendations) so the two cards highlight titles with comparable metadata before applying the provider filters.
+- Removed the “If you like this film...” recommendation row after testing confirmed it slowed the page; cards now stop rendering that block entirely.

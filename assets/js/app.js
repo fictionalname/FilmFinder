@@ -853,10 +853,6 @@ function createMovieCard(movie) {
         details.appendChild(providersRow);
     }
 
-    if (Array.isArray(movie.recommendations) && movie.recommendations.length) {
-        details.appendChild(buildRecommendationBlock(movie.recommendations));
-    }
-
     const actions = document.createElement('div');
     actions.className = 'film-card__actions';
     const trailerLink = document.createElement('a');
@@ -917,44 +913,6 @@ function createProviderBadge(provider) {
     return badge;
 }
 
-function buildRecommendationBlock(recommendations = []) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'film-card__recommendations';
-    wrapper.dataset.recommendationBlock = 'If you like this film...';
-
-    const heading = document.createElement('p');
-    heading.className = 'film-card__recommendations-title';
-    heading.textContent = 'If you like this film...';
-    wrapper.appendChild(heading);
-
-    const list = document.createElement('ul');
-    list.className = 'recommendations-list';
-
-    recommendations.slice(0, 1).forEach((rec) => {
-        const item = document.createElement('li');
-        item.className = 'recommendation-item';
-
-        const link = document.createElement('a');
-        link.href = rec.tmdb_url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.className = 'recommendation-link';
-        link.textContent = rec.title;
-
-        const provider = document.createElement('span');
-        provider.className = 'recommendation-provider';
-        provider.textContent = rec.provider?.label ? ` on ${rec.provider.label}` : '';
-
-        item.appendChild(link);
-        if (provider.textContent) {
-            item.appendChild(provider);
-        }
-        list.appendChild(item);
-    });
-
-    wrapper.appendChild(list);
-    return wrapper;
-}
 
 function getInitials(title = '') {
     return title
