@@ -551,7 +551,7 @@ final class FilmService
             return [];
         }
         $targets = count($selectedProviders) ? $selectedProviders : array_keys($this->providers);
-        $recommendations = $this->tmdb->movieRecommendations($movieId);
+        $recommendations = $this->tmdb->similarMovies($movieId);
         if (empty($recommendations)) {
             return [];
         }

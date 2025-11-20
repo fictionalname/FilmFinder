@@ -105,15 +105,15 @@ final class TmdbClient
     }
 
     /**
-     * Fetch movie recommendations for the supplied movie ID.
+     * Fetch similar movies for the supplied movie ID.
      */
-    public function movieRecommendations(int $movieId): array
+    public function similarMovies(int $movieId): array
     {
         $ttl = (int) Config::get('cache.ttl.metadata', 1800);
-        $cacheKey = 'recommendations_' . $movieId;
+        $cacheKey = 'similar_' . $movieId;
 
         return $this->cache->remember($cacheKey, $ttl, function () use ($movieId) {
-            $data = $this->request("movie/{$movieId}/recommendations", [
+            $data = $this->request("movie/{$movieId}/similar", [
                 'language' => $this->defaultParams['language'] ?? 'en-GB',
                 'page' => 1,
             ]);
