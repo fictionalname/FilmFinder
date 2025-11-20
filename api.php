@@ -5,11 +5,13 @@ declare(strict_types=1);
 use App\Http\JsonResponse;
 use App\Services\FilmService;
 use App\Support\Request;
+use App\Support\HitCounter;
 
 require __DIR__ . '/bootstrap.php';
 
 $request = new Request();
 $service = new FilmService();
+$hitCounter = new HitCounter();
 $action = $request->input('action', 'discover');
 $filters = $request->all();
 unset($filters['action']);
@@ -32,7 +34,12 @@ try {
 
         case 'discover':
         default:
-            JsonResponse::send($service->listMovies($filters));
+            $page = isset($filters['page']) ? (int) $filters['page'] : 1;
+            $hitCount = $page <= 1 ? $hitCounter->increment() : $hitCounter->current();
+            $payload = $service->listMovies($filters);
+            $payload['meta'] = $payload['meta'] ?? [];
+            $payload['meta']['hit_count'] = $hitCount;
+            JsonResponse::send($payload);
             break;
     }
 } catch (Throwable $exception) {

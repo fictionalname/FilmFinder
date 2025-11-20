@@ -231,6 +231,35 @@ select option {
     margin-top: var(--ff-spacing-sm);
 }
 
+.filters-hit-counter {
+    margin-top: var(--ff-spacing-sm);
+    padding: 0.65rem 0.85rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.25);
+}
+
+.filters-hit-counter--overlay {
+    margin-top: var(--ff-spacing-md);
+}
+
+.hit-counter__label {
+    margin: 0;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.28em;
+    color: var(--ff-color-muted);
+}
+
+.hit-counter__value {
+    margin: 0.2rem 0 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ff-color-strong);
+    letter-spacing: 0.06em;
+}
+
 .primary-button,
 .ghost-button {
     border-radius: 8px;

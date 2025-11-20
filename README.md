@@ -17,6 +17,7 @@ Modern cinematic web app for UK streaming availability powered by TMDB with a PH
 - Film cards show runtime, BBFC icons pinned over the poster, cast, provider badges, trailer links, and IMDb / Rotten Tomatoes badges derived heuristically from TMDB scores (permitted data source), with the desktop layout pinning the ratings/availability/trailer row to the bottom for perfectly aligned footers.
 - Film cards now span their grid tile with straight edges and a 20% opaque backdrop so the starfield is visible through the entire card surface.
 - Optional “If you like this film...” strip under the provider list surfaces two TMDB recommendation links filtered to the active providers (remove this block by dropping any references to that heading).
+- A glassy footer hit counter under the Reset / See Films controls shows the all-time Film Finder lookups, backed by a persistent file in `storage/state` so deployments don’t reset the total.
 - A scroll-to-top arrow fades in at the bottom-center of the film grid whenever you scroll inside the main view, letting you tap or click it to glide back to the top.
 - Custom film-inspired SVG favicon keeps the browser tab and installed shortcuts on-brand.
 

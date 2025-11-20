@@ -165,6 +165,7 @@ final class FtpUploader
         '.env.deploy.example',
         'node_modules',
         'storage/cache/*.cache.php',
+        'storage/state/hit-count.txt',
     ];
 
     public function __construct($connection, string $remoteRoot)

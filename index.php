@@ -122,6 +122,10 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
             <button class="ghost-button" data-action="reset-filters">Reset</button>
             <button class="primary-button" data-action="apply-filters">See Films</button>
         </div>
+        <div class="filters-hit-counter" data-role="hit-counter">
+            <p class="hit-counter__label">Film lookups served</p>
+            <p class="hit-counter__value">—</p>
+        </div>
     </aside>
 
     <div class="filters-overlay" data-role="filters-overlay" aria-hidden="true">
@@ -178,6 +182,10 @@ header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
                 <button class="ghost-button" data-action="reset-filters">Reset</button>
                 <button class="primary-button" data-action="apply-overlay">See Films</button>
             </footer>
+            <div class="filters-hit-counter filters-hit-counter--overlay" data-role="hit-counter-overlay">
+                <p class="hit-counter__label">Film lookups served</p>
+                <p class="hit-counter__value">—</p>
+            </div>
         </div>
     </div>
 

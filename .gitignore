@@ -2,3 +2,5 @@
 .env.*
 !.env.deploy.example
 storage/cache/
+storage/state/*
+!storage/state/.gitignore

@@ -57,3 +57,4 @@
 - Added a bottom-center scroll-to-top arrow that fades in once the user scrolls through the main film area and smoothly brings them back to the top when tapped.
 - Genre chips now support three states: single-click to include, double-click to exclude (red state), and a tap to clear, with the backend wiring TMDB `without_genres` for excluded IDs so unwanted categories never appear.
 - Each card now features an “If you like this film...” row beneath the availability chips, showing two TMDB recommendations limited to the currently selected providers so it’s easy to remove later by stripping that named block.
+- Added a persistent hit counter stored under `storage/state` and exposed beneath the Reset/See Films buttons so each “See Films” run increments the all-time total without being wiped by deployments.

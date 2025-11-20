@@ -42,6 +42,7 @@ const state = {
     infiniteObserver: null,
     recentlyViewed: [],
     providerSummary: {},
+    hitCount: 0,
 };
 
 const elements = {
@@ -68,6 +69,8 @@ const elements = {
     sentinel: document.querySelector('[data-role="infinite-sentinel"]'),
     layoutToggle: document.querySelector('[data-role="layout-toggle"]'),
     scrollTopButton: document.querySelector('[data-action="scroll-top"]'),
+    hitCounterDesktop: document.querySelector('[data-role="hit-counter"]'),
+    hitCounterOverlay: document.querySelector('[data-role="hit-counter-overlay"]'),
 };
 
 const scrollEffectsState = {
@@ -118,6 +121,7 @@ async function init() {
     initScrollEffects();
     initScrollTopControl();
     updateProviderSummary();
+    renderHitCounter();
         await applyFilters({ resetPage: true });
     } catch (error) {
         console.error(error);
@@ -645,6 +649,10 @@ async function fetchMovies(page = 1) {
         updateResultsCount();
         const summary = data.providers?.summary || null;
         updateProviderSummary(summary);
+        if (typeof data.meta?.hit_count === 'number') {
+            state.hitCount = data.meta.hit_count;
+            renderHitCounter();
+        }
         toggleEmptyState();
         setupInfiniteScroll(state.pagination.page < state.pagination.totalPages);
 
@@ -992,6 +1000,21 @@ function renderFloatingStatus() {
     const total = state.pagination.totalResults || 0;
     const providerCount = state.filters.providers.length;
     elements.floatingStatusSummary.textContent = `${providerCount} providers · ${total.toLocaleString()} films`;
+}
+
+function renderHitCounter() {
+    const count = Math.max(0, Number(state.hitCount) || 0);
+    const formatted = count.toLocaleString();
+    [elements.hitCounterDesktop, elements.hitCounterOverlay].forEach((container) => {
+        if (!container) return;
+        const valueNode = container.querySelector('.hit-counter__value');
+        if (valueNode) {
+            valueNode.textContent = formatted;
+        } else {
+            container.textContent = formatted;
+        }
+        container.setAttribute('data-hit-count', formatted);
+    });
 }
 
 function setLoadingIndicator(visible, message = 'Fetching cinematic gems…') {

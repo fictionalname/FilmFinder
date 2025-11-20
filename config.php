@@ -53,4 +53,7 @@ return [
             'highlights' => 1200, // 20 minutes
         ],
     ],
+    'stats' => [
+        'hit_counter_file' => __DIR__ . '/storage/state/hit-count.txt',
+    ],
 ];
